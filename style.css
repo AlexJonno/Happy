@@ -98,6 +98,13 @@ footer {
 /* 
 Landing Page Styles
 */
+#choice-section {
+    display: none;
+}
+
+#question-section {
+    display: none;
+}
 
 #logo-container {
     max-width: 110px;
@@ -132,13 +139,13 @@ background-color: #66D7C4;
     outline: none;
 }
 
-#form-entry-container {
+.form-entry-container {
     padding: 25px;
     background-color: white;
     border-radius: 20px;
 }
 
-#settings-title {
+.settings-title {
     font-size: 16px;
     text-align: center;
 }
@@ -176,7 +183,7 @@ Choice Page Styles
     text-align: center;
 }
 
-.under-message, #survey-welcome {
+.under-message, .survey-welcome {
     text-align: center;
     font-size: 14px;
 }

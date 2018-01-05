@@ -7,14 +7,15 @@ const navBar = document.querySelector('#navBar');
 const firstChoice = document.querySelector('#firstChoice-section');
 const firstSurveyButton = document.querySelector('#firstSurveys');
 const firstQuestionButton = document.querySelector('#firstQuestions');
-
+const logo = document.querySelector('#logoCont');
+const surveyMenu = document.querySelector('#choice-section');
+const questionMenu = document.querySelector('#question-section');
 
 
 function renderFirstChoice () {
     return `
-    <section id="choice-section" class="grid">
-    <div id="form-entry-container" class="content-wrap">
-            <h2 id="settings-title">
+    <div id="home-selection" class="content-wrap form-entry-container">
+            <h2 class="settings-title">
                 Your Happiness Index <br> <h3 class="under-message">Connection Succesful</h3>
             </h2>
             <p>
@@ -22,10 +23,10 @@ function renderFirstChoice () {
             </p>
             <form>
                 <div class="choice-button-cont">
-                    <input class="choice-button" id="firstSurveys" type="button" value="Surveys">
+                    <input class="choice-button" id="firstSurveys" type="button" value="Surveys" onclick="nav2SurveySelection()">
                 </div>
                     <div class="choice-button-cont">
-                    <input class="choice-button" id="firstQuestions" type="button" value="Questions">
+                    <input class="choice-button" id="firstQuestions" type="button" value="Questions" onclick="nav2QuestionSelection()">
                 </div>
                 </form>
         </div>
@@ -33,16 +34,55 @@ function renderFirstChoice () {
     `;
 };
 
+
 var ourRequest = new XMLHttpRequest();
 ourRequest.open('GET', url + 'campaigns?' + apiid + '&' + key);
 ourRequest.onload = function(){
     var surveyList = JSON.parse(ourRequest.responseText);
     findSurveys();
-    renderSurveys(menuText);
-    navBar.innerHTML = renderNavbar();
     firstChoice.innerHTML = renderFirstChoice();
+    surveyMenu.style.display = 'none';
+
 };
 ourRequest.send();
+
+var anotherRequest = new XMLHttpRequest();
+anotherRequest.open('GET', url + 'surveys/08/overview?' + apiid + '&' + key);
+anotherRequest.onload = function(){
+    var questionList = JSON.parse(anotherRequest.responseText);
+    findQuestions();
+};
+anotherRequest.send();
+
+function findQuestions(){
+    var questionList = JSON.parse(anotherRequest.responseText);
+    var anotherObjList = questionList.data.survey.questions;
+    anotherObjList.forEach(element => {
+        this.questionText = element.display_text;
+        this.questionID = element.id;
+        this.questionScore = element.average;
+        this.questionVotes = element.votes;
+        if(questionText.length > 22 && document.body.clientWidth < 800) questionText = questionText.substring(0,22) + '...';
+            renderQuestions(questionText, questionID, questionScore);
+            })
+            };
+
+function renderQuestions(questionText, questionID, questionScore, questionVotes){
+    var questionDestination = document.querySelector('#questionTarget');
+    var questionCont = document.createElement('input');
+    var qstatsCont = document.createElement('div');
+    questionDestination.appendChild(questionCont);
+    questionDestination.appendChild(qstatsCont);
+    qstatsCont.setAttribute('class', 'stats-cont');
+    var qroundedScore = Math.round( this.questionScore * 10 ) / 10;
+    qstatsCont.textContent = qroundedScore + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.questionVotes;
+    questionCont.setAttribute('class', 'choice-button');
+    questionCont.setAttribute('value', questionText);
+    questionCont.setAttribute('type', 'button');   
+    questionCont.setAttribute('id', questionID);
+    questionCont.addEventListener('click', updateQuestionAnalysis);
+        };
+
 
 function findSurveys(){
     var surveyList = JSON.parse(ourRequest.responseText);
@@ -53,7 +93,7 @@ function findSurveys(){
         this.score = element.average_score;
         this.respondents = element.votes;
         if(menuText.length > 22 && document.body.clientWidth < 800) menuText = menuText.substring(0,22) + '...';
-            renderSurveys(menuText, idMatch, score);
+            renderSurveys(menuText, idMatch, score, respondents);
             })
             };     
 
@@ -73,41 +113,103 @@ function findSurveys(){
     surveyCont.addEventListener('click', updateAnalysis);
         };
 
-//Analysis View
 
- //window.addEventListener('click', e => {
- //   updateAnalysis();
-// });
+function nav2SurveySelection () {
+    navBar.innerHTML = renderNavbar();
+    logo.style.display = 'none';
+    homeSelection = document.querySelector('#home-selection');
+    homeSelection.style.display = 'none';
+    surveyMenu.style.display = 'block';
+    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
+    currentAnalysisMenu.style.display = 'none';
+};
 
-async function updateAnalysis (clickedID,) {
+function nav2QuestionSelection () {
+    navBar.innerHTML = renderNavbar();
+    logo.style.display = 'none';
+    homeSelection = document.querySelector('#home-selection');
+    homeSelection.style.display = 'none';
+    questionMenu.style.display = 'block';
+    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
+    currentAnalysisMenu.style.display = 'none';
+};
+
+async function updateAnalysis (clickedID) {
     const res = await fetch(url + 'campaigns?' + apiid + '&' + key);
     const json = await res.json();
     var data = json.data.items;
     var title = json.data.items[0];
     var surveySelection = document.querySelector('#choice-section');
     surveySelection.style.display = 'none';
-    var logo = document.querySelector('#logoCont');
-    logo.style.display = 'none';
     main.innerHTML = data.map(renderAnalysis).join('\n');
     header.innerHTML = renderHeader(title);
     document.body.style.backgroundColor = '#fcfcfc';
-    prepNavButtons();
+    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
+    currentAnalysisMenu.style.display = 'block';
     clickedID = this.id;
     console.log(clickedID);
 };
+
+async function updateQuestionAnalysis (clickedQuestionID) {
+    const res = await fetch(url + 'surveys/08/overview?' + apiid + '&' + key);
+    const json = await res.json();
+    var qdata = json.data.survey.questions;
+    var qtitle = json.data.survey.questions[1];
+    var questionSelection = document.querySelector('#question-section');
+    questionSelection.style.display = 'none';
+    document.body.style.backgroundColor = '#fcfcfc';
+    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
+    currentAnalysisMenu.style.display = 'block';
+    main.innerHTML = qdata.map(renderQuestionAnalysis).join('\n');
+    header.innerHTML = renderQuestionHeader(qtitle);
+    clickedQuestionID = this.id;
+    console.log(clickedQuestionID);
+};
+
+function renderQuestionHeader(qtitle){
+    return `
+    <section id="section-a" class="grid">
+    <div class="content-wrap">
+    <h1 id="title">
+        ${qtitle.display_text}
+    </h1>
+    <div class="filter-section content-wrap">
+        <form>
+            <input id="filter-input" type="text" value="All">
+            <input id="filter-button" type="button" value="Filter">
+        </form>
+    </div>
+</div>
+</section>
+`;
+}
+
+function renderQuestionAnalysis(qdata){
+    return `
+    <section class="grid analysisCont">
+    <div class="content-wrap">
+        <h2 class="content-title">
+            ${qdata.display_text}
+        </h2>
+            <hr>
+            </hr>
+            <div class="analysis-wrapper">
+                <p>votes - ${qdata.votes}</p>
+                <p>average score - ${qdata.average}</p>
+            </div>
+    </div>
+</section>    
+    `;
+}
 
 function renderHeader(title) {
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
-    <div id="navCont">
-    <input class="navButton grid" id="Surveys" type="button" value="Surveys">
-    <input class="navButton grid" id="Questions" type="button" value="Questions">
-</div>
     <h1 id="title">
         ${title.name}
     </h1>
-    <div class="filter-section">
+    <div class="filter-section content-wrap">
         <form>
             <input id="filter-input" type="text" value="All">
             <input id="filter-button" type="button" value="Filter">
@@ -136,32 +238,64 @@ function renderAnalysis(data){
     `;
 }
 
-// Nav Buttons
-function prepNavButtons () {
-    var surveyButton = document.querySelector('#Surveys');
-    surveyButton.addEventListener('click', function(){
-        var surveySelection = document.querySelector('#choice-section');
-        surveySelection.style.display = 'block';
-        var headerCont = document.querySelector('#section-a');
-        headerCont.style.display = 'none';
-        var analysisCont = document.querySelectorAll('.analysisCont');
-        for (var x = 0; x < analysisCont.length; x++) {
-            analysisCont[x].style.display = 'none';
-        }
-        var logo = document.querySelector('#logoCont');
-        logo.style.display = 'block';
-        document.body.style.backgroundColor = '#FDDB2F';
-
-})};
-
 function renderNavbar () {
     return `
-    <ul class="breadcrumb">
-    <li><a href="#">Home</a></li>
-    <li><a href="#">> Surveys</a></li>
-    <li><a href="#">> Questions</a></li>
-    <li><a href="#">>> Do you like work</a></li>
+    <ul class="breadcrumb content-wrap">
+    <li onclick="goHome()"><a href="#">Home</a></li>
+    <li onclick="goSurveys()"><a href="#">> Surveys</a></li>
+    <li onclick="goQuestions()"><a href="#">> Questions</a></li>
+    <div class="currentAnalysisMenu">
+    <li>>> Do you like work</a></li>
     <li>&#10516; Summary</li>
+    </div>
   </ul>
     `;
 };
+
+function goHome () {
+    homeSelection = document.querySelector('#home-selection');
+    homeSelection.style.display = 'block';
+    logo.style.display = 'block';
+    surveyMenu.style.display = 'none';
+    questionMenu.style.display = 'none';
+    document.body.style.backgroundColor = '#FDDB2F';
+    breadcrumb = document.querySelector('.breadcrumb');
+    breadcrumb.style.display = 'none';
+    surveyHeader = document.querySelector('#section-a');
+    surveyHeader.style.display = 'none';
+    var analysisCont = document.querySelectorAll('.analysisCont');
+    for (var x = 0; x < analysisCont.length; x++) {
+        analysisCont[x].style.display = 'none';
+    }
+};
+
+function goSurveys () {
+    surveyMenu.style.display = 'block';
+    questionMenu.style.display = 'none';
+    document.body.style.backgroundColor = '#FDDB2F';
+    breadcrumb = document.querySelector('.breadcrumb');
+    breadcrumb.style.display = 'block';
+    surveyHeader = document.querySelector('#section-a');
+    surveyHeader.style.display = 'none';
+    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
+    currentAnalysisMenu.style.display = 'none';
+    var analysisCont = document.querySelectorAll('.analysisCont');
+    for (var x = 0; x < analysisCont.length; x++) {
+        analysisCont[x].style.display = 'none';
+    }
+};
+
+function goQuestions () {
+    surveyMenu.style.display = 'none';
+    questionMenu.style.display = 'block';
+    document.body.style.backgroundColor = '#FDDB2F';
+    breadcrumb = document.querySelector('.breadcrumb');
+    breadcrumb.style.display = 'block';
+    surveyHeader = document.querySelector('#section-a');
+    surveyHeader.style.display = 'none';
+    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
+    currentAnalysisMenu.style.display = 'none';
+    var analysisCont = document.querySelectorAll('.analysisCont');
+    for (var x = 0; x < analysisCont.length; x++) {
+        analysisCont[x].style.display = 'none';
+}};
