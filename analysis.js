@@ -11,6 +11,7 @@ const logo = document.querySelector('#logoCont');
 const surveyMenu = document.querySelector('#choice-section');
 const questionMenu = document.querySelector('#question-section');
 
+// RENDER HOME MENU
 
 function renderFirstChoice () {
     return `
@@ -34,6 +35,7 @@ function renderFirstChoice () {
     `;
 };
 
+// GET API DATA
 
 var ourRequest = new XMLHttpRequest();
 ourRequest.open('GET', url + 'campaigns?' + apiid + '&' + key);
@@ -53,6 +55,8 @@ anotherRequest.onload = function(){
     findQuestions();
 };
 anotherRequest.send();
+
+// MATCH DATA AND CREATE MENU SCREENS
 
 function findQuestions(){
     var questionList = JSON.parse(anotherRequest.responseText);
@@ -113,6 +117,7 @@ function findSurveys(){
     surveyCont.addEventListener('click', updateAnalysis);
         };
 
+// LOGIC FOR HOME MENU
 
 function nav2SurveySelection () {
     navBar.innerHTML = renderNavbar();
@@ -134,6 +139,8 @@ function nav2QuestionSelection () {
     currentAnalysisMenu.style.display = 'none';
 };
 
+// CREATE ANALYSIS SCREEN
+
 async function updateAnalysis (clickedID) {
     const res = await fetch(url + 'campaigns?' + apiid + '&' + key);
     const json = await res.json();
@@ -141,17 +148,24 @@ async function updateAnalysis (clickedID) {
     var title = json.data.items[0];
     var surveySelection = document.querySelector('#choice-section');
     surveySelection.style.display = 'none';
-    main.innerHTML = data.map(renderAnalysis).join('\n');
-    header.innerHTML = renderHeader(title);
     document.body.style.backgroundColor = '#fcfcfc';
     currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
     currentAnalysisMenu.style.display = 'block';
     clickedID = this.id;
     console.log(clickedID);
-};
+    data.forEach(function(e)
+    {
+       if (e.id == clickedID)
+       {
+          header.innerHTML = renderHeader(e);
+          main.innerHTML = renderAnalysis(e);
+       }
+    });
+  };
 
 async function updateQuestionAnalysis (clickedQuestionID) {
-    const res = await fetch(url + 'surveys/08/overview?' + apiid + '&' + key);
+    strURL = url + 'surveys/08/overview?' + apiid + '&' + key;
+    const res = await fetch(strURL);
     const json = await res.json();
     var qdata = json.data.survey.questions;
     var qtitle = json.data.survey.questions[1];
@@ -160,18 +174,24 @@ async function updateQuestionAnalysis (clickedQuestionID) {
     document.body.style.backgroundColor = '#fcfcfc';
     currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
     currentAnalysisMenu.style.display = 'block';
-    main.innerHTML = qdata.map(renderQuestionAnalysis).join('\n');
-    header.innerHTML = renderQuestionHeader(qtitle);
     clickedQuestionID = this.id;
     console.log(clickedQuestionID);
-};
+    qdata.forEach(function(qe)
+    {
+       if (qe.id == clickedQuestionID)
+       {
+          header.innerHTML = renderQuestionHeader(qe);
+          main.innerHTML = renderQuestionAnalysis(qe);
+       }
+    });
+  };
 
-function renderQuestionHeader(qtitle){
+function renderQuestionHeader(qe){
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
     <h1 id="title">
-        ${qtitle.display_text}
+        ${qe.display_text}
     </h1>
     <div class="filter-section content-wrap">
         <form>
@@ -184,30 +204,30 @@ function renderQuestionHeader(qtitle){
 `;
 }
 
-function renderQuestionAnalysis(qdata){
+function renderQuestionAnalysis(qe){
     return `
     <section class="grid analysisCont">
     <div class="content-wrap">
         <h2 class="content-title">
-            ${qdata.display_text}
+            ${qe.display_text}
         </h2>
             <hr>
             </hr>
             <div class="analysis-wrapper">
-                <p>votes - ${qdata.votes}</p>
-                <p>average score - ${qdata.average}</p>
+                <p>votes - ${qe.votes}</p>
+                <p>average score - ${qe.average}</p>
             </div>
     </div>
 </section>    
     `;
 }
 
-function renderHeader(title) {
+function renderHeader(e) {
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
     <h1 id="title">
-        ${title.name}
+        ${e.name}
     </h1>
     <div class="filter-section content-wrap">
         <form>
@@ -220,23 +240,25 @@ function renderHeader(title) {
 `;
 }
 
-function renderAnalysis(data){
+function renderAnalysis(e){
     return `
     <section class="grid analysisCont">
     <div class="content-wrap">
         <h2 class="content-title">
-            ${data.name}
+            ${e.name}
         </h2>
             <hr>
             </hr>
             <div class="analysis-wrapper">
-                <p>votes - ${data.votes}</p>
-                <p>average score - ${data.average_score}</p>
+                <p>votes - ${e.votes}</p>
+                <p>average score - ${e.average_score}</p>
             </div>
     </div>
 </section>    
     `;
 }
+
+// CREATE BREADCRUMB MENU
 
 function renderNavbar () {
     return `
@@ -251,6 +273,8 @@ function renderNavbar () {
   </ul>
     `;
 };
+
+// BREADCRUMB LOGIC
 
 function goHome () {
     homeSelection = document.querySelector('#home-selection');
