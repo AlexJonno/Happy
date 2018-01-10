@@ -49,7 +49,7 @@ ourRequest.onload = function(){
 ourRequest.send();
 
 var anotherRequest = new XMLHttpRequest();
-anotherRequest.open('GET', url + 'surveys/08/overview?' + apiid + '&' + key);
+anotherRequest.open('GET', url + 'surveys/09/overview?' + apiid + '&' + key);
 anotherRequest.onload = function(){
     var questionList = JSON.parse(anotherRequest.responseText);
     findQuestions();
@@ -145,7 +145,6 @@ async function updateAnalysis (clickedID) {
     const res = await fetch(url + 'campaigns?' + apiid + '&' + key);
     const json = await res.json();
     var data = json.data.items;
-    var title = json.data.items[0];
     var surveySelection = document.querySelector('#choice-section');
     surveySelection.style.display = 'none';
     document.body.style.backgroundColor = '#fcfcfc';
@@ -159,29 +158,33 @@ async function updateAnalysis (clickedID) {
        {
           header.innerHTML = renderHeader(e);
           main.innerHTML = renderAnalysis(e);
+          var chartTarget = document.querySelector('#avScoreChart');
+          chartTarget.innerHTML = createCharts(e);
        }
     });
   };
 
 async function updateQuestionAnalysis (clickedQuestionID) {
-    strURL = url + 'surveys/08/overview?' + apiid + '&' + key;
+    strURL = url + 'surveys/09/overview?' + apiid + '&' + key;
     const res = await fetch(strURL);
     const json = await res.json();
+    var qmonthlyAv = json.data.survey.breakdown;
+    var qscores = json.data.survey.scores;
     var qdata = json.data.survey.questions;
-    var qtitle = json.data.survey.questions[1];
     var questionSelection = document.querySelector('#question-section');
     questionSelection.style.display = 'none';
     document.body.style.backgroundColor = '#fcfcfc';
     currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
     currentAnalysisMenu.style.display = 'block';
     clickedQuestionID = this.id;
-    console.log(clickedQuestionID);
     qdata.forEach(function(qe)
     {
        if (qe.id == clickedQuestionID)
        {
           header.innerHTML = renderQuestionHeader(qe);
           main.innerHTML = renderQuestionAnalysis(qe);
+          var qchartTarget = document.querySelector('#qavScoreChart');
+          qchartTarget.innerHTML = createQuestionCharts(qe, qmonthlyAv, qscores);
        }
     });
   };
@@ -190,6 +193,8 @@ function renderQuestionHeader(qe){
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
+    <hr>
+    </hr>
     <h1 id="title">
         ${qe.display_text}
     </h1>
@@ -208,14 +213,39 @@ function renderQuestionAnalysis(qe){
     return `
     <section class="grid analysisCont">
     <div class="content-wrap">
-        <h2 class="content-title">
-            ${qe.display_text}
-        </h2>
             <hr>
             </hr>
             <div class="analysis-wrapper">
-                <p>votes - ${qe.votes}</p>
-                <p>average score - ${qe.average}</p>
+                <p class="analysisTitle">Votes</p>
+                <div class="figureBorder">
+                <p class="analysisFigure">${qe.votes}</p>
+                </div>
+                <hr></hr>
+                <p class="analysisTitle">Standard Deviation</p>
+                <div class="figureBorder">
+                <p class="analysisFigure">${qe.std_dev}</p>
+                </div>
+                <hr></hr>
+                <div>
+                <p class="analysisTitle">Average Score</p>
+                <p id="avScoreText">
+                ${qe.average}
+                </p>
+                <canvas id="qavScoreChart">
+                </canvas>
+                <hr>
+                </hr>
+                <p class="analysisTitle">Monthly Averages</p>
+                <canvas id="qmonthlySpread">
+                </canvas>
+                <hr>
+                </hr>
+                <p class="analysisTitle">Score Spread</p>
+                <canvas id="qscoreSpread">
+                </canvas>
+                <hr>
+                </hr>
+                </div>
             </div>
     </div>
 </section>    
@@ -226,6 +256,8 @@ function renderHeader(e) {
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
+    <hr>
+    </hr>
     <h1 id="title">
         ${e.name}
     </h1>
@@ -244,19 +276,130 @@ function renderAnalysis(e){
     return `
     <section class="grid analysisCont">
     <div class="content-wrap">
-        <h2 class="content-title">
-            ${e.name}
-        </h2>
             <hr>
             </hr>
             <div class="analysis-wrapper">
                 <p>votes - ${e.votes}</p>
                 <p>average score - ${e.average_score}</p>
+                <canvas id="avScoreChart">
+                </canvas>
+                <hr>
+                </hr>
             </div>
     </div>
 </section>    
     `;
 }
+
+function createCharts (e) {
+    var avScoreChart = document.querySelector('#avScoreChart').getContext('2d');
+    var outOf = 10 - e.average_score;
+    var avScore = new Chart(avScoreChart, {
+        type: 'doughnut',
+        data: {
+            labels:['Average Score'],
+            datasets:[{
+                label: 'Points',
+                backgroundColor: ['#61c3a8', '#666666'],
+                borderWidth: ['80px'],
+                data: [e.average_score, outOf]
+            }],
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            cutoutPercentage: 80
+        }
+    });
+};
+
+function createQuestionCharts (qe, qmonthlyAv, qscores) {
+    var qavScoreChart = document.querySelector('#qavScoreChart').getContext('2d');
+    var qoutOf = 10 - qe.average;
+    var qavScore = new Chart(qavScoreChart, {
+        type: 'doughnut',
+        data: {
+            labels:['Average Score'],
+            datasets:[{
+                label: 'Points',
+                backgroundColor: ['#61c3a8', '#666666'],
+                borderWidth: ['80px'],
+                data: [qe.average, qoutOf]
+            }],
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            cutoutPercentage: 80
+        }
+    })
+    var qMonthlySpreadChart = document.querySelector('#qmonthlySpread').getContext('2d');
+    var monthlyResults = [];
+    var dateResults = [];
+    qmonthlyAv.forEach(function(i) {
+        monthlyResults.push(i.average);
+        dateResults.push(i.label);
+    })
+    var qMonthlySpread = new Chart(qMonthlySpreadChart, {
+        type: 'bar',
+        data: {
+            labels: dateResults,
+            datasets:[{
+                label: 'Monthly Averages',
+                backgroundColor: ['#fadc32', '#d7dc50', '#96cd7d', '#5fc3aa', '#32becd', '#2db4d2', '#55a0be', '#969196', '#d27873', '#f0645f', '#00353f', '#ffbffb'],
+                data: monthlyResults
+            }],
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            barBackground: '#e2e2e2',
+            scales: {
+                xAxes: [{
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    }
+                }]
+            },
+        }
+    })
+    var qscoreSpreadChart = document.querySelector('#qscoreSpread').getContext('2d');
+    var scoreResults = [];
+    for (var prop in qscores) {
+        scoreResults.push(qscores[prop]);
+    }
+    scoreResults.reverse();
+    var qscoreSpread = new Chart(qscoreSpreadChart, {
+        type: 'horizontalBar',
+        data: {
+            labels:['10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
+            datasets:[{
+                label: 'Score Spread',
+                backgroundColor: ['#fadc32', '#d7dc50', '#96cd7d', '#5fc3aa', '#32becd', '#2db4d2', '#55a0be', '#969196', '#d27873', '#f0645f', '#00353f', '#ffbffb'],
+                data: scoreResults
+            }],
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            scales: {
+                xAxes: [{
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    }
+                }]
+            },
+            cutoutPercentage: 80,
+        }
+        });
+        
+    };
+
+
 
 // CREATE BREADCRUMB MENU
 
