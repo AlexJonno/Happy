@@ -44,7 +44,14 @@ ourRequest.onload = function(){
     findSurveys();
     firstChoice.innerHTML = renderFirstChoice();
     surveyMenu.style.display = 'none';
-
+    if('serviceWorker' in navigator) {
+        try {
+            navigator.serviceWorker.register('sw.js');
+            console.log('SW Registered');
+        } catch (error) {
+            console.log('SW Failed');
+        }
+    }
 };
 ourRequest.send();
 
@@ -228,7 +235,7 @@ function renderQuestionAnalysis(qe){
                 <hr></hr>
                 <div>
                 <p class="analysisTitle">Average Score</p>
-                <p id="avScoreText">
+                <p class="avScoreText">
                 ${qe.average}
                 </p>
                 <canvas id="qavScoreChart">
@@ -273,14 +280,21 @@ function renderHeader(e) {
 }
 
 function renderAnalysis(e){
+    var avScoreStep = e.average_score;
+    var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
     return `
     <section class="grid analysisCont">
     <div class="content-wrap">
             <hr>
             </hr>
             <div class="analysis-wrapper">
-                <p>votes - ${e.votes}</p>
-                <p>average score - ${e.average_score}</p>
+            <p class="analysisTitle">Votes</p>
+                <div class="figureBorder">
+                <p class="analysisFigure">${e.votes}</p>
+                </div>
+                <hr></hr>
+                <p class="analysisTitle">Average score</p>
+                <p class="avScoreText">${avScoreRounded}</p>
                 <canvas id="avScoreChart">
                 </canvas>
                 <hr>
@@ -293,7 +307,9 @@ function renderAnalysis(e){
 
 function createCharts (e) {
     var avScoreChart = document.querySelector('#avScoreChart').getContext('2d');
-    var outOf = 10 - e.average_score;
+    var avScoreStep = e.average_score;
+    var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
+    var outOf = 10 - avScoreRounded;
     var avScore = new Chart(avScoreChart, {
         type: 'doughnut',
         data: {
@@ -302,7 +318,7 @@ function createCharts (e) {
                 label: 'Points',
                 backgroundColor: ['#61c3a8', '#666666'],
                 borderWidth: ['80px'],
-                data: [e.average_score, outOf]
+                data: [avScoreRounded, outOf]
             }],
         },
         options: {
@@ -338,14 +354,63 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
     var qMonthlySpreadChart = document.querySelector('#qmonthlySpread').getContext('2d');
     var monthlyResults = [];
     var dateResults = [];
+    var dateConverted = [];
     qmonthlyAv.forEach(function(i) {
         monthlyResults.push(i.average);
         dateResults.push(i.label);
     })
+    dateResults.forEach(function(x){
+        var lol = x.toString();
+        year = lol.slice(2,4);
+        lolrofl = lol.slice(4,6);
+            if (lolrofl.indexOf('01') >= 0) {
+                lolrofl = 'Jan ' + year;
+            }
+            else if(lolrofl.indexOf('02') >= 0) {
+                lolrofl = 'Feb ' + year;
+            }
+            else if(lolrofl.indexOf('03') >= 0) {
+                lolrofl = 'Mar ' + year;
+            }
+            else if(lolrofl.indexOf('04') >= 0) {
+                lolrofl = 'Apr ' + year;
+            }
+            else if(lolrofl.indexOf('05') >= 0) {
+                lolrofl = 'May ' + year;
+            }
+            else if(lolrofl.indexOf('06') >= 0) {
+                lolrofl = 'Jun ' + year;
+            }
+            else if(lolrofl.indexOf('07') >= 0) {
+                lolrofl = 'Jul ' + year;
+            }
+            else if(lolrofl.indexOf('08') >= 0) {
+                lolrofl = 'Aug ' + year;
+            }
+            else if(lolrofl.indexOf('09') >= 0) {
+                lolrofl = 'Sep ' + year;
+            }
+            else if(lolrofl.indexOf('10') >= 0) {
+                lolrofl = 'Oct ' + year;
+            }
+            else if(lolrofl.indexOf('11') >= 0) {
+                lolrofl = 'Nov ' + year;
+            }
+            else if(lolrofl.indexOf('12') >= 0) {
+                lolrofl = 'Dec ' + year;
+            }
+                else {
+                    console.log('fail');
+                }
+           dateConverted.push(lolrofl);
+            });
+
+
+
     var qMonthlySpread = new Chart(qMonthlySpreadChart, {
         type: 'bar',
         data: {
-            labels: dateResults,
+            labels: dateConverted,
             datasets:[{
                 label: 'Monthly Averages',
                 backgroundColor: ['#fadc32', '#d7dc50', '#96cd7d', '#5fc3aa', '#32becd', '#2db4d2', '#55a0be', '#969196', '#d27873', '#f0645f', '#00353f', '#ffbffb'],
@@ -359,8 +424,18 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
             barBackground: '#e2e2e2',
             scales: {
                 xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Month'
+                    },
                     gridLines: {
                         color: "rgba(0, 0, 0, 0)",
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Av. Score'
                     }
                 }]
             },
@@ -388,8 +463,18 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
             },
             scales: {
                 xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Number of Votes'
+                    },
                     gridLines: {
                         color: "rgba(0, 0, 0, 0)",
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Rating'
                     }
                 }]
             },

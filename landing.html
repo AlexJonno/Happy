@@ -15,11 +15,9 @@
                 </div>
                 </section>
                 <!-- Welcome Message -->
-
                 <section id="form-entry-section" class="grid">
                         <div id="form-entry-container" class="content-wrap">
-                                <h2 id="settings-title">
-                                    The Happiness Index <br><h3 class="under-message">Welcome</h3>
+                            <h3 class="under-message">Welcome</h3>
                                 </h2>
                                 <p>
                                     We need to associate your device with a Happiness Index Account. Please enter your "Client ID" in the box below:
@@ -29,7 +27,7 @@
                                         <input type="text" id="clientidtext">
                                     </div>
                                         <div id="connect-button-container">
-                                        <input id="connect-button" type="button" value="Connect App">
+                                        <input id="connect-button" type="button" value="Connect App" onclick="setCookie()">
                                     </div>
                                     </form>
                             </div>
@@ -40,4 +38,5 @@
                 </div>
             </footer>
     </body>
+    <script src="login.js" type="text/javascript"></script>
 </html>

@@ -1,11 +1,11 @@
 
 @font-face {
     font-family: "Museo300";
-    src: url(fonts/Museo300-Regular) format("truetype");
+    src: url(fonts/Nunito-Regular.ttf) format("truetype");
 }
 
 body {
-    font-family: "Museo300", Verdana, Tahoma, sans-serif;
+    font-family: "Nunito", Verdana, Tahoma, sans-serif;
     color: #666666;
     margin: 0 12px 0 12px;
 }
@@ -109,9 +109,11 @@ Landing Page Styles
     display: none;
 }
 
-#logo-container {
-    max-width: 110px;
-    height: auto;
+
+
+#landing-logo {
+    height: 140px;
+    width: auto;
 }
 
 #landing-body {
@@ -213,7 +215,7 @@ ul.breadcrumb li a:hover {
     text-decoration: underline;
 }
 
-#avScoreText {
+.avScoreText {
     text-align: center;
     position: relative;
     margin: 0 auto;
@@ -224,7 +226,7 @@ canvas {
     margin: 0 0 36px 0;
 }
 
-#qavScoreChart {
+#qavScoreChart, #avScoreChart {
     position: relative;
     bottom: 15px;
 }
@@ -241,7 +243,7 @@ canvas {
 }
 .figureBorder{
     margin: 0 auto;
-    border: 3px solid #61c3a8;
+    border: 4px solid #61c3a8;
     height: 54px;
         border-radius: 50%;
         -moz-border-radius:50%;
