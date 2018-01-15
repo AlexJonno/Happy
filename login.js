@@ -1,18 +1,7 @@
-var input ="";
-input = document.getElementById('clientidtext').value;
-console.log(input);
-
-function setCookie(input) {
-   document.cookie = "ClientID=" + input;
-   var x = document.cookie;
-   console.log(x);
+function setCookie(){
+    var value = document.getElementById('clientidtext').innerHTML.value;
+    console.log(value);
+    document.cookie = "clientid=" + value;
+    var x = document.cookie;
+    console.log(x);
 };
-
-document.cookie = 'lolrofl=1344';
-
-var y = document.cookie;
-
-console.log(y);
-
-
-
