@@ -125,7 +125,7 @@ Landing Page Styles
     text-align: center;
 }
 
-#connect-button {
+#the-connect-button {
     width: 196px;
     color: white;
     background-color: #00BD9C;
@@ -217,9 +217,16 @@ ul.breadcrumb li a:hover {
 
 .avScoreText {
     text-align: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.avScoreCont {
     position: relative;
-    margin: 0 auto;
-    top: 64px;
 }
 
 canvas {
@@ -228,7 +235,6 @@ canvas {
 
 #qavScoreChart, #avScoreChart {
     position: relative;
-    bottom: 15px;
 }
 
 .analysisTitle {
@@ -253,4 +259,10 @@ canvas {
 
 #main-footer {
     margin: 10px 0 10px 0;
+}
+
+#error, #connectError {
+    text-align: center;
+    color: red;
+    font-size: 14px;
 }

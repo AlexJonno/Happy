@@ -1,5 +1,5 @@
 const staticAssets = [
-    './',
+    './index.html',
     './style.css',
     './analysis.js'
 ];
@@ -31,6 +31,7 @@ async function networkFirst(req){
         cache.put(req, res.clone());
         return res;
     } catch (error) {
-        return await cache.match(req);
+        const cachedResponse = await cache.match(req);
+        return cachedResponse || await caches.match('./fallback.json');
     }
 }

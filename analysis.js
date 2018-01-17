@@ -1,6 +1,6 @@
 const url = 'https://demo.the-happiness-index.com/api.json/';
 const key = 'api_key=82be191d81c3bc659805c6c7801cd17b';
-const apiid = 'api_id=391121';
+var apiid = 'api_id=391121'; // document.cookie
 const main = document.querySelector('#analysis');
 const header = document.querySelector('#header');
 const navBar = document.querySelector('#navBar');
@@ -44,14 +44,14 @@ ourRequest.onload = function(){
     findSurveys();
     firstChoice.innerHTML = renderFirstChoice();
     surveyMenu.style.display = 'none';
-    if('serviceWorker' in navigator) {
-        try {
-            navigator.serviceWorker.register('sw.js');
-            console.log('SW Registered');
-        } catch (error) {
-            console.log('SW Failed');
-        }
-    }
+ /* if('serviceWorker' in navigator) {
+     try {
+          navigator.serviceWorker.register('sw.js');
+          console.log('SW Registered');
+       } catch (error) {
+           console.log('SW Failed');
+      }
+ } */
 };
 ourRequest.send();
 
@@ -127,11 +127,11 @@ function findSurveys(){
 // LOGIC FOR HOME MENU
 
 function nav2SurveySelection () {
+    surveyMenu.style.display = 'grid';
     navBar.innerHTML = renderNavbar();
     logo.style.display = 'none';
     homeSelection = document.querySelector('#home-selection');
     homeSelection.style.display = 'none';
-    surveyMenu.style.display = 'block';
     currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
     currentAnalysisMenu.style.display = 'none';
 };
@@ -141,7 +141,7 @@ function nav2QuestionSelection () {
     logo.style.display = 'none';
     homeSelection = document.querySelector('#home-selection');
     homeSelection.style.display = 'none';
-    questionMenu.style.display = 'block';
+    questionMenu.style.display = 'grid';
     currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
     currentAnalysisMenu.style.display = 'none';
 };
@@ -235,11 +235,13 @@ function renderQuestionAnalysis(qe){
                 <hr></hr>
                 <div>
                 <p class="analysisTitle">Average Score</p>
+                <div class="avScoreCont">
                 <p class="avScoreText">
                 ${qe.average}
                 </p>
                 <canvas id="qavScoreChart">
                 </canvas>
+                </div>
                 <hr>
                 </hr>
                 <p class="analysisTitle">Monthly Averages</p>
@@ -507,7 +509,7 @@ function renderNavbar () {
 function goHome () {
     homeSelection = document.querySelector('#home-selection');
     homeSelection.style.display = 'block';
-    logo.style.display = 'block';
+    logo.style.display = 'grid';
     surveyMenu.style.display = 'none';
     questionMenu.style.display = 'none';
     document.body.style.backgroundColor = '#FDDB2F';
@@ -522,7 +524,7 @@ function goHome () {
 };
 
 function goSurveys () {
-    surveyMenu.style.display = 'block';
+    surveyMenu.style.display = 'grid';
     questionMenu.style.display = 'none';
     document.body.style.backgroundColor = '#FDDB2F';
     breadcrumb = document.querySelector('.breadcrumb');
@@ -539,7 +541,7 @@ function goSurveys () {
 
 function goQuestions () {
     surveyMenu.style.display = 'none';
-    questionMenu.style.display = 'block';
+    questionMenu.style.display = 'grid';
     document.body.style.backgroundColor = '#FDDB2F';
     breadcrumb = document.querySelector('.breadcrumb');
     breadcrumb.style.display = 'block';
