@@ -42,6 +42,7 @@ ourRequest.open('GET', url + 'campaigns?' + apiid + '&' + key);
 ourRequest.onload = function(){
     var surveyList = JSON.parse(ourRequest.responseText);
     findSurveys();
+    // getCookie();
     firstChoice.innerHTML = renderFirstChoice();
     surveyMenu.style.display = 'none';
  /* if('serviceWorker' in navigator) {
@@ -62,6 +63,15 @@ anotherRequest.onload = function(){
     findQuestions();
 };
 anotherRequest.send();
+
+/* function getCookie(){
+    var cookiesArray = document.cookie.split("; ");  
+    var getDomain = cookiesArray[0].split("=");
+    var clientDomain = getDomain[1];
+    var clientID = cookiesArray[1];
+    var clientKey = cookiesArray[2];
+    console.log(cookiesArray);
+  }; */
 
 // MATCH DATA AND CREATE MENU SCREENS
 
@@ -296,9 +306,11 @@ function renderAnalysis(e){
                 </div>
                 <hr></hr>
                 <p class="analysisTitle">Average score</p>
+                <div class="avScoreCont">
                 <p class="avScoreText">${avScoreRounded}</p>
                 <canvas id="avScoreChart">
                 </canvas>
+                </div>
                 <hr>
                 </hr>
             </div>
