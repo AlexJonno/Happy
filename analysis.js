@@ -1,4 +1,5 @@
 const url = 'https://demo.the-happiness-index.com/api.json/';
+const newurl = 'https://thehappinessindicator.the-happiness-index.com/api.json/';
 const key = 'api_key=82be191d81c3bc659805c6c7801cd17b';
 var apiid = 'api_id=391121'; // document.cookie
 const main = document.querySelector('#analysis');
@@ -37,8 +38,25 @@ function renderFirstChoice () {
 
 // GET API DATA
 
+
+
+function findSurveys(){
+    var surveyList = JSON.parse(ourRequest.responseText);
+    var surveyArray = [];
+    var objList = surveyList.data;
+    if (objList.hasOwnProperty("survey")){
+        surveyArray.push(objList.survey);
+        surveyArray.forEach(element => {
+            this.respondents = element.votes;
+            this.idMatch = element.id;
+            this.score = element.average;
+            this.menuText = element.id;
+            renderSurveys(menuText, idMatch, score, respondents);
+        })}
+};
+
 var ourRequest = new XMLHttpRequest();
-ourRequest.open('GET', url + 'campaigns?' + apiid + '&' + key);
+ourRequest.open('GET', newurl + 'surveys/50/overview?' + 'api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87');
 ourRequest.onload = function(){
     var surveyList = JSON.parse(ourRequest.responseText);
     findSurveys();
@@ -92,41 +110,50 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     var questionDestination = document.querySelector('#questionTarget');
     var questionCont = document.createElement('input');
     var qstatsCont = document.createElement('div');
+    var qvotesCont = document.createElement('div');
     questionDestination.appendChild(questionCont);
     questionDestination.appendChild(qstatsCont);
-    qstatsCont.setAttribute('class', 'stats-cont');
+    questionDestination.appendChild(qvotesCont);
+    qstatsCont.setAttribute('class', 'qstats-cont');
+    qvotesCont.setAttribute('class', 'qvotes-cont');
     var qroundedScore = Math.round( this.questionScore * 10 ) / 10;
-    qstatsCont.textContent = qroundedScore + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.questionVotes;
+    qstatsCont.textContent = qroundedScore; // + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.questionVotes;
+    qvotesCont.textContent = this.questionVotes;
     questionCont.setAttribute('class', 'choice-button');
     questionCont.setAttribute('value', questionText);
     questionCont.setAttribute('type', 'button');   
     questionCont.setAttribute('id', questionID);
     questionCont.addEventListener('click', updateQuestionAnalysis);
         };
+ 
 
-
-function findSurveys(){
+/* function findSurveys(){
     var surveyList = JSON.parse(ourRequest.responseText);
-    var objList = surveyList.data.items;
+    var objList = surveyList.data.survey;
     objList.forEach(element => {
-        this.menuText = element.name;
+        // this.menuText = element.name;
         this.idMatch = element.id;
-        this.score = element.average_score;
+        this.score = element.average;
         this.respondents = element.votes;
         if(menuText.length > 22 && document.body.clientWidth < 800) menuText = menuText.substring(0,22) + '...';
             renderSurveys(menuText, idMatch, score, respondents);
             })
-            };     
+            };     */
 
  function renderSurveys(menuText, idMatch, score, respondents){
     var surveyDestination = document.querySelector('.choice-button-cont');
     var surveyCont = document.createElement('input');
     var statsCont = document.createElement('div');
+    var votesCont = document.createElement('div');
     surveyDestination.appendChild(surveyCont);
     surveyDestination.appendChild(statsCont);
+    surveyDestination.appendChild(votesCont);
     statsCont.setAttribute('class', 'stats-cont');
+    votesCont.setAttribute('class', 'votes-cont');
     var roundedScore = Math.round( this.score * 10 ) / 10;
-    statsCont.textContent = roundedScore + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.respondents;
+    statsCont.textContent = roundedScore; // + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.respondents;
+    respondents = respondents.toLocaleString();
+    votesCont.textContent = respondents;
     surveyCont.setAttribute('class', 'choice-button');
     surveyCont.setAttribute('value', menuText);
     surveyCont.setAttribute('type', 'button');   
@@ -142,8 +169,8 @@ function nav2SurveySelection () {
     logo.style.display = 'none';
     homeSelection = document.querySelector('#home-selection');
     homeSelection.style.display = 'none';
-    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
-    currentAnalysisMenu.style.display = 'none';
+    var nav2Target = document.querySelector('#nav2');
+    nav2Target.setAttribute('class', 'activeNav');
 };
 
 function nav2QuestionSelection () {
@@ -152,33 +179,28 @@ function nav2QuestionSelection () {
     homeSelection = document.querySelector('#home-selection');
     homeSelection.style.display = 'none';
     questionMenu.style.display = 'grid';
-    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
-    currentAnalysisMenu.style.display = 'none';
+    var nav3Target = document.querySelector('#nav3');
+    nav3Target.setAttribute('class', 'activeNav');
 };
 
 // CREATE ANALYSIS SCREEN
 
 async function updateAnalysis (clickedID) {
-    const res = await fetch(url + 'campaigns?' + apiid + '&' + key);
+    const res = await fetch(newurl + 'surveys/50/overview?' + 'api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87');
     const json = await res.json();
-    var data = json.data.items;
+    var monthlyAv = json.data.survey.breakdown;
+    var scores = json.data.survey.scores;
     var surveySelection = document.querySelector('#choice-section');
+    var data = json.data.survey;
     surveySelection.style.display = 'none';
     document.body.style.backgroundColor = '#fcfcfc';
-    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
-    currentAnalysisMenu.style.display = 'block';
     clickedID = this.id;
     console.log(clickedID);
-    data.forEach(function(e)
-    {
-       if (e.id == clickedID)
-       {
-          header.innerHTML = renderHeader(e);
-          main.innerHTML = renderAnalysis(e);
+    document.documentElement.scrollTop = 0;
+          header.innerHTML = renderHeader(data);
+          main.innerHTML = renderAnalysis(data);
           var chartTarget = document.querySelector('#avScoreChart');
-          chartTarget.innerHTML = createCharts(e);
-       }
-    });
+          chartTarget.innerHTML = createCharts(data, scores, monthlyAv);
   };
 
 async function updateQuestionAnalysis (clickedQuestionID) {
@@ -191,9 +213,9 @@ async function updateQuestionAnalysis (clickedQuestionID) {
     var questionSelection = document.querySelector('#question-section');
     questionSelection.style.display = 'none';
     document.body.style.backgroundColor = '#fcfcfc';
-    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
-    currentAnalysisMenu.style.display = 'block';
+
     clickedQuestionID = this.id;
+    document.documentElement.scrollTop = 0;
     qdata.forEach(function(qe)
     {
        if (qe.id == clickedQuestionID)
@@ -216,7 +238,7 @@ function renderQuestionHeader(qe){
         ${qe.display_text}
     </h1>
     <div class="filter-section content-wrap">
-        <form>
+        <form class="filterForm">
             <input id="filter-input" type="text" value="All">
             <input id="filter-button" type="button" value="Filter">
         </form>
@@ -227,33 +249,37 @@ function renderQuestionHeader(qe){
 }
 
 function renderQuestionAnalysis(qe){
+    var votesStep = qe.votes
+    var votesDisplay = votesStep.toLocaleString();
     return `
     <section class="grid analysisCont">
     <div class="content-wrap">
+            <div class="analysis-wrapper">
+            <div>
+            <p class="analysisTitle">Average Score</p>
+            <div class="avScoreCont">
+            <p class="avScoreText">
+            ${qe.average}
+            </p>
+            <canvas id="qavScoreChart">
+            </canvas>
+            </div>
             <hr>
             </hr>
-            <div class="analysis-wrapper">
                 <p class="analysisTitle">Votes</p>
+                <div class="avScoreCont">
                 <div class="figureBorder">
-                <p class="analysisFigure">${qe.votes}</p>
+                <p class="avScoreText">${votesDisplay}</p>
+                </div>
                 </div>
                 <hr></hr>
                 <p class="analysisTitle">Standard Deviation</p>
+                <div class="avScoreCont">
                 <div class="figureBorder">
-                <p class="analysisFigure">${qe.std_dev}</p>
+                <p class="avScoreText">${qe.std_dev}</p>
+                </div>
                 </div>
                 <hr></hr>
-                <div>
-                <p class="analysisTitle">Average Score</p>
-                <div class="avScoreCont">
-                <p class="avScoreText">
-                ${qe.average}
-                </p>
-                <canvas id="qavScoreChart">
-                </canvas>
-                </div>
-                <hr>
-                </hr>
                 <p class="analysisTitle">Monthly Averages</p>
                 <canvas id="qmonthlySpread">
                 </canvas>
@@ -271,17 +297,17 @@ function renderQuestionAnalysis(qe){
     `;
 }
 
-function renderHeader(e) {
+function renderHeader(data) {
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
     <hr>
     </hr>
     <h1 id="title">
-        ${e.name}
+        ${data.id}
     </h1>
     <div class="filter-section content-wrap">
-        <form>
+        <form class="filterForm">
             <input id="filter-input" type="text" value="All">
             <input id="filter-button" type="button" value="Filter">
         </form>
@@ -291,26 +317,38 @@ function renderHeader(e) {
 `;
 }
 
-function renderAnalysis(e){
-    var avScoreStep = e.average_score;
+function renderAnalysis(data){
+    var votesStep = data.votes
+    var votesDisplay = votesStep.toLocaleString();
+    var avScoreStep = data.average;
     var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
     return `
     <section class="grid analysisCont">
     <div class="content-wrap">
+            <div class="analysis-wrapper">
+            <p class="analysisTitle">Average score</p>
+            <div class="avScoreCont">
+            <p class="avScoreText">${avScoreRounded}</p>
+            <canvas id="avScoreChart">
+            </canvas>
+            </div>
             <hr>
             </hr>
-            <div class="analysis-wrapper">
             <p class="analysisTitle">Votes</p>
+            <div class="avScoreCont">
                 <div class="figureBorder">
-                <p class="analysisFigure">${e.votes}</p>
+                <p class="avScoreText">${votesDisplay}</p>
+                </div>
                 </div>
                 <hr></hr>
-                <p class="analysisTitle">Average score</p>
-                <div class="avScoreCont">
-                <p class="avScoreText">${avScoreRounded}</p>
-                <canvas id="avScoreChart">
+                <p class="analysisTitle">Monthly Averages</p>
+                <canvas id="monthlySpread">
                 </canvas>
-                </div>
+                <hr>
+                </hr>
+                <p class="analysisTitle">Score Spread</p>
+                <canvas id="scoreSpread">
+                </canvas>
                 <hr>
                 </hr>
             </div>
@@ -319,9 +357,9 @@ function renderAnalysis(e){
     `;
 }
 
-function createCharts (e) {
+function createCharts (data, scores, monthlyAv) {
     var avScoreChart = document.querySelector('#avScoreChart').getContext('2d');
-    var avScoreStep = e.average_score;
+    var avScoreStep = data.average;
     var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
     var outOf = 10 - avScoreRounded;
     var avScore = new Chart(avScoreChart, {
@@ -330,7 +368,7 @@ function createCharts (e) {
             labels:['Average Score'],
             datasets:[{
                 label: 'Points',
-                backgroundColor: ['#61c3a8', '#666666'],
+                backgroundColor: ['#61c3a8', '#eaeaea'],
                 borderWidth: ['80px'],
                 data: [avScoreRounded, outOf]
             }],
@@ -342,7 +380,138 @@ function createCharts (e) {
             cutoutPercentage: 80
         }
     });
-};
+    var MonthlySpreadChart = document.querySelector('#monthlySpread').getContext('2d');
+    var monthlyResults = [];
+    var dateResults = [];
+    var dateConverted = [];
+    monthlyAv.forEach(function(a) {
+        monthlyResults.push(a.average);
+        dateResults.push(a.label);
+    })
+    dateResults.forEach(function(x){
+        var lol = x.toString();
+        year = lol.slice(2,4);
+        lolrofl = lol.slice(4,6);
+            if (lolrofl.indexOf('01') >= 0) {
+                lolrofl = 'Jan ' + year;
+            }
+            else if(lolrofl.indexOf('02') >= 0) {
+                lolrofl = 'Feb ' + year;
+            }
+            else if(lolrofl.indexOf('03') >= 0) {
+                lolrofl = 'Mar ' + year;
+            }
+            else if(lolrofl.indexOf('04') >= 0) {
+                lolrofl = 'Apr ' + year;
+            }
+            else if(lolrofl.indexOf('05') >= 0) {
+                lolrofl = 'May ' + year;
+            }
+            else if(lolrofl.indexOf('06') >= 0) {
+                lolrofl = 'Jun ' + year;
+            }
+            else if(lolrofl.indexOf('07') >= 0) {
+                lolrofl = 'Jul ' + year;
+            }
+            else if(lolrofl.indexOf('08') >= 0) {
+                lolrofl = 'Aug ' + year;
+            }
+            else if(lolrofl.indexOf('09') >= 0) {
+                lolrofl = 'Sep ' + year;
+            }
+            else if(lolrofl.indexOf('10') >= 0) {
+                lolrofl = 'Oct ' + year;
+            }
+            else if(lolrofl.indexOf('11') >= 0) {
+                lolrofl = 'Nov ' + year;
+            }
+            else if(lolrofl.indexOf('12') >= 0) {
+                lolrofl = 'Dec ' + year;
+            }
+                else {
+                    console.log('fail');
+                }
+           dateConverted.push(lolrofl);
+            });
+
+
+
+    var MonthlySpread = new Chart(MonthlySpreadChart, {
+        type: 'bar',
+        data: {
+            labels: dateConverted,
+            datasets:[{
+                label: 'Monthly Averages',
+                backgroundColor: ['#fadc32', '#d7dc50', '#96cd7d', '#5fc3aa', '#32becd', '#2db4d2', '#55a0be', '#969196', '#d27873', '#f0645f', '#00353f', '#ffbffb'],
+                data: monthlyResults
+            }],
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            barBackground: '#e2e2e2',
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Month'
+                    },
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Av. Score'
+                    }
+                }]
+            },
+        }
+    })
+    var scoreSpreadChart = document.querySelector('#scoreSpread').getContext('2d');
+    var scoreResults = [];
+    for (var prop in scores) {
+        scoreResults.push(scores[prop]);
+    }
+    scoreResults.reverse();
+    var scoreSpread = new Chart(scoreSpreadChart, {
+        type: 'horizontalBar',
+        data: {
+            labels:['10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
+            datasets:[{
+                label: 'Score Spread',
+                backgroundColor: ['#fadc32', '#d7dc50', '#96cd7d', '#5fc3aa', '#32becd', '#2db4d2', '#55a0be', '#969196', '#d27873', '#f0645f', '#00353f', '#ffbffb'],
+                data: scoreResults
+            }],
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Number of Votes'
+                    },
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                    display: true,
+                    labelString: 'Rating'
+                    }
+                }]
+            },
+            cutoutPercentage: 80,
+        }
+        });
+        
+    };
 
 function createQuestionCharts (qe, qmonthlyAv, qscores) {
     var qavScoreChart = document.querySelector('#qavScoreChart').getContext('2d');
@@ -353,7 +522,7 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
             labels:['Average Score'],
             datasets:[{
                 label: 'Points',
-                backgroundColor: ['#61c3a8', '#666666'],
+                backgroundColor: ['#61c3a8', '#eaeaea'],
                 borderWidth: ['80px'],
                 data: [qe.average, qoutOf]
             }],
@@ -504,15 +673,11 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
 
 function renderNavbar () {
     return `
-    <ul class="breadcrumb content-wrap">
-    <li onclick="goHome()"><a href="#">Home</a></li>
-    <li onclick="goSurveys()"><a href="#">> Surveys</a></li>
-    <li onclick="goQuestions()"><a href="#">> Questions</a></li>
-    <div class="currentAnalysisMenu">
-    <li>>> Do you like work</a></li>
-    <li>&#10516; Summary</li>
+    <div class="triplegrid">
+    <div id="nav1" onclick="goHome()"><a href="#">Home</a></div>
+    <div id="nav2" onclick="goSurveys()"><a href="#">Surveys</a></div>
+    <div id="nav3" onclick="goQuestions()"><a href="#">Questions</a></div>
     </div>
-  </ul>
     `;
 };
 
@@ -525,7 +690,7 @@ function goHome () {
     surveyMenu.style.display = 'none';
     questionMenu.style.display = 'none';
     document.body.style.backgroundColor = '#FDDB2F';
-    breadcrumb = document.querySelector('.breadcrumb');
+    breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'none';
     surveyHeader = document.querySelector('#section-a');
     surveyHeader.style.display = 'none';
@@ -539,29 +704,34 @@ function goSurveys () {
     surveyMenu.style.display = 'grid';
     questionMenu.style.display = 'none';
     document.body.style.backgroundColor = '#FDDB2F';
-    breadcrumb = document.querySelector('.breadcrumb');
-    breadcrumb.style.display = 'block';
+    breadcrumb = document.querySelector('.triplegrid');
+    breadcrumb.style.display = 'grid';
     surveyHeader = document.querySelector('#section-a');
     surveyHeader.style.display = 'none';
-    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
-    currentAnalysisMenu.style.display = 'none';
     var analysisCont = document.querySelectorAll('.analysisCont');
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
     }
+    var nav2Target = document.querySelector('#nav2');
+    nav2Target.setAttribute('class', 'activeNav');
+    var nav3Target = document.querySelector('#nav3');
+    nav3Target.classList.remove('activeNav');
 };
 
 function goQuestions () {
     surveyMenu.style.display = 'none';
     questionMenu.style.display = 'grid';
     document.body.style.backgroundColor = '#FDDB2F';
-    breadcrumb = document.querySelector('.breadcrumb');
-    breadcrumb.style.display = 'block';
+    breadcrumb = document.querySelector('.triplegrid');
+    breadcrumb.style.display = 'grid';
     surveyHeader = document.querySelector('#section-a');
     surveyHeader.style.display = 'none';
-    currentAnalysisMenu = document.querySelector('.currentAnalysisMenu');
-    currentAnalysisMenu.style.display = 'none';
     var analysisCont = document.querySelectorAll('.analysisCont');
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
-}};
+}
+var nav3Target = document.querySelector('#nav3');
+nav3Target.setAttribute('class', 'activeNav');
+var nav2Target = document.querySelector('#nav2');
+nav2Target.classList.remove('activeNav'); 
+};

@@ -18,14 +18,6 @@ event.preventDefault();
   redirect(id, apikey, subdomain);
 };
 
-function getCookie(){
-  var cookiesArray = document.cookie.split("; ");  
-  var getDomain = cookiesArray[0].split("=");
-  var clientDomain = getDomain[1];
-  var clientID = cookiesArray[1];
-  var clientKey = cookiesArray[2];
-};
-
 submitButton.addEventListener('click', submitInformation);
 
 async function redirect(id, apikey, subdomain){
