@@ -40,6 +40,7 @@ background-color: #212B3E;
     border: 1px solid grey;
     padding: 6px;
     font-size: 14px;
+    width: 210px;
 }
 
 #filter-input:focus {
@@ -64,7 +65,7 @@ background-color: #212B3E;
 
 .title {
     text-decoration: none;
-    font-size: 22px;
+    font-size: 18px;
     margin-top: 30px 0 30px 0;
 }
 
@@ -184,6 +185,8 @@ Choice Page Styles
     padding: 10px 5px 10px 5px;
     font-size: 16px;
     width: 100%;
+    margin-top: 36px;
+    font-family: 'Nunito';
 }
 
 .choice-button-cont {
@@ -258,9 +261,9 @@ canvas {
 
 .analysisTitle {
     text-align: center;
-    font-size: 22px;
+    font-size: 18px;
     margin: 0 auto;
-    padding: 20px 0 20px 0;
+    padding: 10px 0 10px 0;
     background-color: #FDDB2F;
     margin-bottom: 30px;
     color: #4c4946;
@@ -271,12 +274,12 @@ canvas {
 }
 .figureBorder{
     margin: 0 auto;
-    border: 16px solid #61c3a8;
-    height: 160px;
+    border: 12px solid #61c3a8;
+    height: 120px;
         border-radius: 50%;
         -moz-border-radius:50%;
         -webkit-border-radius: 50%;
-        width: 160px;
+        width: 120px;
 }
 
 #main-footer {
@@ -311,4 +314,12 @@ canvas, .avScoreCont {
 
 .activeNav{
     border-bottom: 2px solid white;
+}
+
+#firstSurveys, #firstQuestions{
+    margin-top: 10px;
+}
+
+#logout{
+    background-color: #969196;
 }

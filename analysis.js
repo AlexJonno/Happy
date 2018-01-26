@@ -18,7 +18,7 @@ function renderFirstChoice () {
     return `
     <div id="home-selection" class="content-wrap form-entry-container">
             <h2 class="settings-title">
-                Your Happiness Index <br> <h3 class="under-message">Connection Succesful</h3>
+                Your Happiness Index <br> <h3 class="under-message">Connection Successful</h3>
             </h2>
             <p>
                 Thank you for using our App. To begin viewing your results please select either Surveys or Questions:
@@ -29,6 +29,9 @@ function renderFirstChoice () {
                 </div>
                     <div class="choice-button-cont">
                     <input class="choice-button" id="firstQuestions" type="button" value="Questions" onclick="nav2QuestionSelection()">
+                </div>
+                <div class="choice-button-cont">
+                    <input class="choice-button" id="logout" type="button" value="Logout" onclick="alogout()">
                 </div>
                 </form>
         </div>
@@ -101,14 +104,14 @@ function findQuestions(){
         this.questionID = element.id;
         this.questionScore = element.average;
         this.questionVotes = element.votes;
-        if(questionText.length > 22 && document.body.clientWidth < 800) questionText = questionText.substring(0,28) + '...';
+     //   if(questionText.length > 22 && document.body.clientWidth < 800) questionText = questionText.substring(0,28) + '...';
             renderQuestions(questionText, questionID, questionScore);
             })
             };
 
 function renderQuestions(questionText, questionID, questionScore, questionVotes){
     var questionDestination = document.querySelector('#questionTarget');
-    var questionCont = document.createElement('input');
+    var questionCont = document.createElement('div');
     var qstatsCont = document.createElement('div');
     var qvotesCont = document.createElement('div');
     questionDestination.appendChild(questionCont);
@@ -120,8 +123,8 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     qstatsCont.textContent = qroundedScore; // + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.questionVotes;
     qvotesCont.textContent = this.questionVotes;
     questionCont.setAttribute('class', 'choice-button');
-    questionCont.setAttribute('value', questionText);
-    questionCont.setAttribute('type', 'button');   
+    questionCont.textContent = questionText;
+    //questionCont.setAttribute('type', 'button');   
     questionCont.setAttribute('id', questionID);
     questionCont.addEventListener('click', updateQuestionAnalysis);
         };
@@ -142,7 +145,7 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
 
  function renderSurveys(menuText, idMatch, score, respondents){
     var surveyDestination = document.querySelector('.choice-button-cont');
-    var surveyCont = document.createElement('input');
+    var surveyCont = document.createElement('div');
     var statsCont = document.createElement('div');
     var votesCont = document.createElement('div');
     surveyDestination.appendChild(surveyCont);
@@ -155,8 +158,8 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     respondents = respondents.toLocaleString();
     votesCont.textContent = respondents;
     surveyCont.setAttribute('class', 'choice-button');
-    surveyCont.setAttribute('value', menuText);
-    surveyCont.setAttribute('type', 'button');   
+    surveyCont.textContent = menuText;
+    // surveyCont.setAttribute('type', 'button');   
     surveyCont.setAttribute('id', idMatch);
     surveyCont.addEventListener('click', updateAnalysis);
         };
@@ -461,6 +464,9 @@ function createCharts (data, scores, monthlyAv) {
                     scaleLabel: {
                         display: true,
                         labelString: 'Av. Score'
+                    },
+                    ticks: {
+                        beginAtZero: true
                     }
                 }]
             },
@@ -524,6 +530,7 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
             }],
         },
         options: {
+            maintainAspectRatio: false,
             legend: {
                 display: false
             },
@@ -615,6 +622,9 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
                     scaleLabel: {
                         display: true,
                         labelString: 'Av. Score'
+                    },
+                    ticks: {
+                        beginAtZero: true
                     }
                 }]
             },
@@ -730,4 +740,16 @@ nav3Target.setAttribute('class', 'activeNav');
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
 }
+};
+
+function alogout() {
+    var cookies = document.cookie.split(";");
+
+    for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        var eqPos = cookie.indexOf("=");
+        var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+    window.location.assign('file:///C:/Users/Alex Johnston/Desktop/H-appy/landing.html');
 };
