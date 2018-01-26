@@ -101,7 +101,7 @@ function findQuestions(){
         this.questionID = element.id;
         this.questionScore = element.average;
         this.questionVotes = element.votes;
-        if(questionText.length > 22 && document.body.clientWidth < 800) questionText = questionText.substring(0,22) + '...';
+        if(questionText.length > 22 && document.body.clientWidth < 800) questionText = questionText.substring(0,28) + '...';
             renderQuestions(questionText, questionID, questionScore);
             })
             };
@@ -232,9 +232,7 @@ function renderQuestionHeader(qe){
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
-    <hr>
-    </hr>
-    <h1 id="title">
+    <h1 class="title">
         ${qe.display_text}
     </h1>
     <div class="filter-section content-wrap">
@@ -301,9 +299,7 @@ function renderHeader(data) {
     return `
     <section id="section-a" class="grid">
     <div class="content-wrap">
-    <hr>
-    </hr>
-    <h1 id="title">
+    <h1 class="title">
         ${data.id}
     </h1>
     <div class="filter-section content-wrap">
@@ -701,6 +697,10 @@ function goHome () {
 };
 
 function goSurveys () {
+    var nav3Target = document.querySelector('#nav3');
+    nav3Target.classList.remove('activeNav');
+    var nav2Target = document.querySelector('#nav2');
+    nav2Target.setAttribute('class', 'activeNav');
     surveyMenu.style.display = 'grid';
     questionMenu.style.display = 'none';
     document.body.style.backgroundColor = '#FDDB2F';
@@ -712,13 +712,13 @@ function goSurveys () {
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
     }
-    var nav2Target = document.querySelector('#nav2');
-    nav2Target.setAttribute('class', 'activeNav');
-    var nav3Target = document.querySelector('#nav3');
-    nav3Target.classList.remove('activeNav');
 };
 
 function goQuestions () {
+    var nav2Target = document.querySelector('#nav2');
+nav2Target.classList.remove('activeNav'); 
+var nav3Target = document.querySelector('#nav3');
+nav3Target.setAttribute('class', 'activeNav');
     surveyMenu.style.display = 'none';
     questionMenu.style.display = 'grid';
     document.body.style.backgroundColor = '#FDDB2F';
@@ -730,8 +730,4 @@ function goQuestions () {
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
 }
-var nav3Target = document.querySelector('#nav3');
-nav3Target.setAttribute('class', 'activeNav');
-var nav2Target = document.querySelector('#nav2');
-nav2Target.classList.remove('activeNav'); 
 };
