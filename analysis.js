@@ -239,15 +239,18 @@ function renderQuestionHeader(qe){
         ${qe.display_text}
     </h1>
     <div class="filter-section content-wrap">
-        <form class="filterForm">
-            <input id="filter-input" type="text" value="All">
-            <input id="filter-button" type="button" value="Filter">
-        </form>
     </div>
 </div>
 </section>
 `;
 }
+
+/*         <form class="filterForm">
+            <input id="filter-input" type="text" value="All">
+            <input id="filter-button" type="button" value="Filter">
+        </form>
+
+        */
 
 function renderQuestionAnalysis(qe){
     var votesStep = qe.votes
@@ -274,13 +277,6 @@ function renderQuestionAnalysis(qe){
                 </div>
                 </div>
                 <hr></hr>
-                <p class="analysisTitle">Standard Deviation</p>
-                <div class="avScoreCont">
-                <div class="figureBorder">
-                <p class="avScoreText">${qe.std_dev}</p>
-                </div>
-                </div>
-                <hr></hr>
                 <p class="analysisTitle">Monthly Averages</p>
                 <canvas id="qmonthlySpread">
                 </canvas>
@@ -291,6 +287,14 @@ function renderQuestionAnalysis(qe){
                 </canvas>
                 <hr>
                 </hr>
+                <p class="analysisTitle">Standard Deviation</p>
+                <div class="avScoreCont">
+                <p class="avScoreText">${qe.std_dev}</p>
+                <canvas id="qstandardDev">
+                </canvas>
+                </div>
+                </div>
+                <hr></hr>
                 </div>
             </div>
     </div>
@@ -306,15 +310,19 @@ function renderHeader(data) {
         ${data.id}
     </h1>
     <div class="filter-section content-wrap">
-        <form class="filterForm">
-            <input id="filter-input" type="text" value="All">
-            <input id="filter-button" type="button" value="Filter">
+
         </form>
     </div>
 </div>
 </section>
 `;
 }
+
+/*
+        <form class="filterForm">
+            <input id="filter-input" type="text" value="All">
+            <input id="filter-button" type="button" value="Filter">
+*/
 
 function renderAnalysis(data){
     var votesStep = data.votes
@@ -361,18 +369,41 @@ function createCharts (data, scores, monthlyAv) {
     var avScoreStep = data.average;
     var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
     var outOf = 10 - avScoreRounded;
+    var colorToUse;
+    if (avScoreRounded < 2){
+        colorToUse = '#f0645f';
+    } else if(avScoreRounded >= 2 && avScoreRounded < 3){
+        colorToUse = '#d27873';
+    } else if(avScoreRounded >= 3 && avScoreRounded < 4){
+        colorToUse = '#969196';
+    } else if(avScoreRounded >= 4 && avScoreRounded < 5){
+        colorToUse = '#55a0be';
+    } else if(avScoreRounded >= 5 && avScoreRounded < 6){
+        colorToUse = '#2db4d2';
+    } else if(avScoreRounded >= 6 && avScoreRounded < 7){
+        colorToUse = '#32becd';
+    } else if(avScoreRounded >= 7 && avScoreRounded < 8){
+        colorToUse = '#5fc3aa';
+    } else if(avScoreRounded >= 8 && avScoreRounded < 9){
+        colorToUse = '#96cd7d';
+    } else if(avScoreRounded >= 9 && avScoreRounded < 10){
+        colorToUse = '#fadc32';
+    } else if(avScoreRounded == 10){
+        colorToUse = '#d7dc50';
+    }
     var avScore = new Chart(avScoreChart, {
         type: 'doughnut',
         data: {
             labels:['Average Score'],
             datasets:[{
                 label: 'Points',
-                backgroundColor: ['#61c3a8', '#eaeaea'],
+                backgroundColor: [colorToUse, '#eaeaea'],
                 borderWidth: ['80px'],
                 data: [avScoreRounded, outOf]
             }],
         },
         options: {
+            maintainAspectRatio: false,
             legend: {
                 display: false
             },
@@ -518,13 +549,35 @@ function createCharts (data, scores, monthlyAv) {
 function createQuestionCharts (qe, qmonthlyAv, qscores) {
     var qavScoreChart = document.querySelector('#qavScoreChart').getContext('2d');
     var qoutOf = 10 - qe.average;
+    var colorToUse;
+    if (qe.average < 2){
+        colorToUse = '#f0645f';
+    } else if(qe.average >= 2 && qe.average < 3){
+        colorToUse = '#d27873';
+    } else if(qe.average >= 3 && qe.average < 4){
+        colorToUse = '#969196';
+    } else if(qe.average >= 4 && qe.average < 5){
+        colorToUse = '#55a0be';
+    } else if(qe.average >= 5 && qe.average < 6){
+        colorToUse = '#2db4d2';
+    } else if(qe.average >= 6 && qe.average < 7){
+        colorToUse = '#32becd';
+    } else if(qe.average >= 7 && qe.average < 8){
+        colorToUse = '#5fc3aa';
+    } else if(qe.average >= 8 && qe.average < 9){
+        colorToUse = '#96cd7d';
+    } else if(qe.average >= 9 && qe.average < 10){
+        colorToUse = '#d7dc50';
+    } else if(qe.average == 10){
+        colorToUse = '#fadc32';
+    }
     var qavScore = new Chart(qavScoreChart, {
         type: 'doughnut',
         data: {
             labels:['Average Score'],
             datasets:[{
                 label: 'Points',
-                backgroundColor: ['#61c3a8', '#eaeaea'],
+                backgroundColor: [colorToUse, '#eaeaea'],
                 borderWidth: ['80px'],
                 data: [qe.average, qoutOf]
             }],
@@ -537,6 +590,33 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
             cutoutPercentage: 80
         }
     })
+
+    var qstandardDev = document.querySelector('#qstandardDev').getContext('2d');
+    var sdoutOf = 4.5 - qe.std_dev;
+
+
+    //, , , , , , , , , '#00353f', '#ffbffb'
+    var qstddev = new Chart(qstandardDev, {
+        type: 'doughnut',
+        data: {
+            labels:['Standard Deviation'],
+            datasets:[{
+                label: 'Points',
+                backgroundColor: ['#61c3a8', '#eaeaea'],
+                borderWidth: ['80px'],
+                data: [qe.std_dev , sdoutOf]
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            cutoutPercentage: 80
+        }
+    })
+
+
     var qMonthlySpreadChart = document.querySelector('#qmonthlySpread').getContext('2d');
     var monthlyResults = [];
     var dateResults = [];
