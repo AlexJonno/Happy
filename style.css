@@ -110,8 +110,6 @@ Landing Page Styles
     display: none;
 }
 
-
-
 .landing-logo {
     height: 140px;
     width: auto;
@@ -149,7 +147,7 @@ background-color: #66D7C4;
 }
 
 .form-entry-container {
-    padding: 25px;
+    padding: 20px 10px 20px 10px;
     background-color: white;
     border-radius: 20px;
 }
@@ -182,14 +180,53 @@ Choice Page Styles
 .choice-button {
     color: white;
     background-color: #00BD9C;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 0 10px 0;
+    font-size: 16px;
+    width: 84%;
+    float: left;
+    margin: 10px 0 10px 0;
+     font-family: 'Nunito';
+}
+
+.firstchoice-button{
+    color: white;
+    background-color: #00BD9C;
     margin: 15px 0 5px 0;
     border: none;
     border-radius: 4px;
-    padding: 10px 5px 10px 5px;
+    padding: 10px 0 10px 0;
     font-size: 16px;
     width: 100%;
     margin-top: 36px;
     font-family: 'Nunito';
+}
+
+.texttochange {
+    color: white;
+        border-radius: 10px;
+        background-color: #00BD9C;
+    }
+
+.menuCont{
+    height: 100%;
+    width: 100%;
+    display: inline-block;
+    position: relative;
+}
+
+.avScoreDisplay{
+    position: absolute;
+        top: 164px;
+        font-family: 'Nunito';
+        font-size: 11px;
+        right: 21px;
+        text-decoration: underline;
+}
+
+#surveyTarget, #questionTarget{
+    padding-top: 10px;
 }
 
 .choice-button-cont {
@@ -296,9 +333,16 @@ canvas {
 }
 
 .stats-cont, .qstats-cont {
-    width: 50%;
-    float: left;
-    text-indent: 30%;
+    width: 13%;
+    float: right;
+    text-align: center;
+    height: 42px;
+    line-height: 42px;
+    margin-left: 3%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0px;
 }
 
 .votes-cont, .qvotes-cont {

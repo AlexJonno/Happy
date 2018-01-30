@@ -25,13 +25,13 @@ function renderFirstChoice () {
             </p>
             <form>
                 <div class="choice-button-cont">
-                    <input class="choice-button" id="firstSurveys" type="button" value="Surveys" onclick="nav2SurveySelection()">
+                    <input class="firstchoice-button" id="firstSurveys" type="button" value="Surveys" onclick="nav2SurveySelection()">
                 </div>
                     <div class="choice-button-cont">
-                    <input class="choice-button" id="firstQuestions" type="button" value="Questions" onclick="nav2QuestionSelection()">
+                    <input class="firstchoice-button" id="firstQuestions" type="button" value="Questions" onclick="nav2QuestionSelection()">
                 </div>
                 <div class="choice-button-cont">
-                    <input class="choice-button" id="logout" type="button" value="Logout" onclick="alogout()">
+                    <input class="firstchoice-button" id="logout" type="button" value="Logout" onclick="alogout()">
                 </div>
                 </form>
         </div>
@@ -104,7 +104,6 @@ function findQuestions(){
         this.questionID = element.id;
         this.questionScore = element.average;
         this.questionVotes = element.votes;
-     //   if(questionText.length > 22 && document.body.clientWidth < 800) questionText = questionText.substring(0,28) + '...';
             renderQuestions(questionText, questionID, questionScore);
             })
             };
@@ -113,56 +112,47 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     var questionDestination = document.querySelector('#questionTarget');
     var questionCont = document.createElement('div');
     var qstatsCont = document.createElement('div');
-    var qvotesCont = document.createElement('div');
-    questionDestination.appendChild(questionCont);
-    questionDestination.appendChild(qstatsCont);
-    questionDestination.appendChild(qvotesCont);
-    qstatsCont.setAttribute('class', 'qstats-cont');
-    qvotesCont.setAttribute('class', 'qvotes-cont');
+    var menuCont = document.createElement('div');
+    questionDestination.appendChild(menuCont);
+    menuCont.appendChild(questionCont);
+    menuCont.appendChild(qstatsCont);
+    menuCont.setAttribute('class', 'menuCont');
+    qstatsCont.setAttribute('class', 'qstats-cont texttochange');
     var qroundedScore = Math.round( this.questionScore * 10 ) / 10;
-    qstatsCont.textContent = qroundedScore; // + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.questionVotes;
-    qvotesCont.textContent = this.questionVotes;
+    qstatsCont.textContent = qroundedScore;
     questionCont.setAttribute('class', 'choice-button');
-    questionCont.textContent = questionText;
-    //questionCont.setAttribute('type', 'button');   
+    questionCont.textContent = questionText;   
     questionCont.setAttribute('id', questionID);
     questionCont.addEventListener('click', updateQuestionAnalysis);
         };
  
 
-/* function findSurveys(){
-    var surveyList = JSON.parse(ourRequest.responseText);
-    var objList = surveyList.data.survey;
-    objList.forEach(element => {
-        // this.menuText = element.name;
-        this.idMatch = element.id;
-        this.score = element.average;
-        this.respondents = element.votes;
-        if(menuText.length > 22 && document.body.clientWidth < 800) menuText = menuText.substring(0,22) + '...';
-            renderSurveys(menuText, idMatch, score, respondents);
-            })
-            };     */
-
  function renderSurveys(menuText, idMatch, score, respondents){
-    var surveyDestination = document.querySelector('.choice-button-cont');
+    var surveyDestination = document.querySelector('#surveyTarget');
     var surveyCont = document.createElement('div');
     var statsCont = document.createElement('div');
-    var votesCont = document.createElement('div');
-    surveyDestination.appendChild(surveyCont);
-    surveyDestination.appendChild(statsCont);
-    surveyDestination.appendChild(votesCont);
-    statsCont.setAttribute('class', 'stats-cont');
-    votesCont.setAttribute('class', 'votes-cont');
+    var menuCont = document.createElement('div');
+    surveyDestination.appendChild(menuCont);
+    menuCont.appendChild(surveyCont);
+    menuCont.appendChild(statsCont);
+    menuCont.setAttribute('class', 'menuCont');
+    statsCont.setAttribute('class', 'stats-cont texttochange');
     var roundedScore = Math.round( this.score * 10 ) / 10;
-    statsCont.textContent = roundedScore; // + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + '\u00A0' + this.respondents;
-    respondents = respondents.toLocaleString();
-    votesCont.textContent = respondents;
+    statsCont.textContent = roundedScore;
     surveyCont.setAttribute('class', 'choice-button');
     surveyCont.textContent = menuText;
-    // surveyCont.setAttribute('type', 'button');   
     surveyCont.setAttribute('id', idMatch);
     surveyCont.addEventListener('click', updateAnalysis);
         };
+    // surveyDestination.appendChild(surveyCont);
+    // surveyDestination.appendChild(statsCont);
+    // statsCont.setAttribute('class', 'stats-cont');
+    
+    // respondents = respondents.toLocaleString();
+    
+       
+    
+    
 
 // LOGIC FOR HOME MENU
 
@@ -270,11 +260,10 @@ function renderQuestionAnalysis(qe){
             </div>
             <hr>
             </hr>
-                <p class="analysisTitle">Votes</p>
-                <div class="avScoreCont">
-                <div class="figureBorder">
+            <p class="analysisTitle">Votes</p>
+            <div class="avScoreCont">
                 <p class="avScoreText">${votesDisplay}</p>
-                </div>
+                <canvas id="qtotalVoters"></canvas>
                 </div>
                 <hr></hr>
                 <p class="analysisTitle">Monthly Averages</p>
@@ -343,9 +332,8 @@ function renderAnalysis(data){
             </hr>
             <p class="analysisTitle">Votes</p>
             <div class="avScoreCont">
-                <div class="figureBorder">
                 <p class="avScoreText">${votesDisplay}</p>
-                </div>
+                <canvas id="totalVoters"></canvas>
                 </div>
                 <hr></hr>
                 <p class="analysisTitle">Monthly Averages</p>
@@ -365,6 +353,49 @@ function renderAnalysis(data){
 }
 
 function createCharts (data, scores, monthlyAv) {
+    var votesStep = data.votes
+    var votesDisplay = votesStep.toLocaleString();
+    var totalVotesChart = document.querySelector('#totalVoters');
+    var ylabel = data.votes + 16000;
+    var thetotalVotersChart = new Chart(totalVotesChart, {
+        type: 'bar',
+        data: {
+            label:'Total Votes',
+            datasets:[{
+                label: 'Responses',
+                backgroundColor: '#d7dc50',
+                data: [data.votes]
+            },
+            {
+            label: 'Non-Responses',
+            backgroundColor: '#d27873',
+            data: [16000]
+            }
+        ],
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    stacked: true,
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    }
+                }],
+                yAxes: [{
+                    stacked: true,
+                    ticks: {
+                        maxTicksLimit: 2,
+                        max: ylabel,
+                    },
+                    gridlines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    },
+                }]
+            },
+        }
+    });
+
+
     var avScoreChart = document.querySelector('#avScoreChart').getContext('2d');
     var avScoreStep = data.average;
     var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
@@ -547,6 +578,49 @@ function createCharts (data, scores, monthlyAv) {
     };
 
 function createQuestionCharts (qe, qmonthlyAv, qscores) {
+    var qvotesStep = qe.votes
+    var qvotesDisplay = qvotesStep.toLocaleString();
+    var qtotalVotesChart = document.querySelector('#qtotalVoters');
+    var qylabel = qe.votes + 16;
+    var qthetotalVotersChart = new Chart(qtotalVotesChart, {
+        type: 'bar',
+        data: {
+            label:'Total Votes',
+            datasets:[{
+                label: 'Responses',
+                backgroundColor: '#d7dc50',
+                data: [qe.votes]
+            },
+            {
+            label: 'Non-Responses',
+            backgroundColor: '#d27873',
+            data: [16]
+            }
+        ],
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    stacked: true,
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    }
+                }],
+                yAxes: [{
+                    stacked: true,
+                    ticks: {
+                        maxTicksLimit: 2,
+                        max: qylabel,
+                    },
+                    gridlines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    },
+                }]
+            },
+        }
+    });
+
+
     var qavScoreChart = document.querySelector('#qavScoreChart').getContext('2d');
     var qoutOf = 10 - qe.average;
     var colorToUse;
@@ -710,6 +784,8 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
             },
         }
     })
+
+
     var qscoreSpreadChart = document.querySelector('#qscoreSpread').getContext('2d');
     var scoreResults = [];
     for (var prop in qscores) {
