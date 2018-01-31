@@ -124,8 +124,40 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     questionCont.textContent = questionText;   
     questionCont.setAttribute('id', questionID);
     questionCont.addEventListener('click', updateQuestionAnalysis);
+    changecolor();
         };
  
+    function changecolor(){
+        var divs = document.querySelectorAll('.texttochange');
+        for(var i = 0; i < divs.length; i++){
+            if(divs[i].textContent < 2){
+                divs[i].style.backgroundColor = '#f0645f';
+            } else if (divs[i].textContent >= 2 && divs[i].textContent < 3){
+                divs[i].style.backgroundColor = '#d27873';
+            } else if (divs[i].textContent >= 3 && divs[i].textContent < 4){
+                divs[i].style.backgroundColor = '#969196';
+            } else if (divs[i].textContent >= 4 && divs[i].textContent < 5){
+                divs[i].style.backgroundColor = '#55a0be';
+            } else if (divs[i].textContent >= 5 && divs[i].textContent < 6){
+                divs[i].style.backgroundColor = '#2db4d2';
+            } else if (divs[i].textContent >= 6 && divs[i].textContent < 7){
+                divs[i].style.backgroundColor = '#32becd';
+            } else if (divs[i].textContent >= 7 && divs[i].textContent < 8){
+                divs[i].style.backgroundColor = '#5fc3aa';
+            } else if (divs[i].textContent >= 8 && divs[i].textContent < 9){
+                divs[i].style.backgroundColor = '#96cd7d';
+            } else if (divs[i].textContent >= 9 && divs[i].textContent < 10){
+                divs[i].style.backgroundColor = '#d7dc50';
+            } else if (divs[i].textContent == 10){
+                divs[i].style.backgroundColor = '#fadc32';
+            } else {
+                divs[i].style.backgroundColor = '#fcfcfc';
+            }
+        }
+    }
+
+   // '#fadc32', '#d7dc50', '#96cd7d', '#5fc3aa', '#32becd', '#2db4d2', '#55a0be', '#969196', '#d27873', '#f0645f', '#00353f', '#ffbffb'
+    
 
  function renderSurveys(menuText, idMatch, score, respondents){
     var surveyDestination = document.querySelector('#surveyTarget');
@@ -143,6 +175,7 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     surveyCont.textContent = menuText;
     surveyCont.setAttribute('id', idMatch);
     surveyCont.addEventListener('click', updateAnalysis);
+    changecolor();
         };
     // surveyDestination.appendChild(surveyCont);
     // surveyDestination.appendChild(statsCont);
@@ -190,10 +223,10 @@ async function updateAnalysis (clickedID) {
     clickedID = this.id;
     console.log(clickedID);
     document.documentElement.scrollTop = 0;
-          header.innerHTML = renderHeader(data);
-          main.innerHTML = renderAnalysis(data);
-          var chartTarget = document.querySelector('#avScoreChart');
-          chartTarget.innerHTML = createCharts(data, scores, monthlyAv);
+    header.innerHTML = renderHeader(data);
+    main.innerHTML = renderAnalysis(data);
+    var chartTarget = document.querySelector('#avScoreChart');
+    chartTarget.innerHTML = createCharts(data, scores, monthlyAv);
   };
 
 async function updateQuestionAnalysis (clickedQuestionID) {
@@ -206,7 +239,6 @@ async function updateQuestionAnalysis (clickedQuestionID) {
     var questionSelection = document.querySelector('#question-section');
     questionSelection.style.display = 'none';
     document.body.style.backgroundColor = '#fcfcfc';
-
     clickedQuestionID = this.id;
     document.documentElement.scrollTop = 0;
     qdata.forEach(function(qe)
@@ -909,3 +941,39 @@ function alogout() {
     }
     window.location.assign('file:///C:/Users/Alex Johnston/Desktop/H-appy/landing.html');
 };
+$( document ).ready(function() {
+    $("#questionTarget").sortable({
+    placeholder: 'slide-placeholder',
+   axis: "y",
+   revert: 150,
+   start: function(e, ui){
+       
+       placeholderHeight = ui.item.outerHeight();
+       ui.placeholder.height(placeholderHeight + 15);
+       $('<div class="slide-placeholder-animator" data-height="' + placeholderHeight + '"></div>').insertAfter(ui.placeholder);
+   
+   },
+   change: function(event, ui) {
+       
+       ui.placeholder.stop().height(0).animate({
+           height: ui.item.outerHeight() + 15
+       }, 300);
+       
+       placeholderAnimatorHeight = parseInt($(".slide-placeholder-animator").attr("data-height"));
+       
+       $(".slide-placeholder-animator").stop().height(placeholderAnimatorHeight + 15).animate({
+           height: 0
+       }, 300, function() {
+           $(this).remove();
+           placeholderHeight = ui.item.outerHeight();
+           $('<div class="slide-placeholder-animator" data-height="' + placeholderHeight + '"></div>').insertAfter(ui.placeholder);
+       });
+       
+   },
+   stop: function(e, ui) {
+       
+       $(".slide-placeholder-animator").remove();
+       
+   },
+});
+});
