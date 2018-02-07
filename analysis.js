@@ -11,7 +11,9 @@ const firstQuestionButton = document.querySelector('#firstQuestions');
 const logo = document.querySelector('#logoCont');
 const surveyMenu = document.querySelector('#choice-section');
 const questionMenu = document.querySelector('#question-section');
-
+const favSection = document.querySelector('#favourite-section');
+var nofavmessage = document.querySelector('.nofavs');
+var favavScore = document.querySelector('#favavScore');
 // RENDER HOME MENU
 
 function renderFirstChoice () {
@@ -38,8 +40,6 @@ function renderFirstChoice () {
 </section>
     `;
 };
-
-// GET API DATA
 
 
 
@@ -113,21 +113,26 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     var questionCont = document.createElement('div');
     var qstatsCont = document.createElement('div');
     var menuCont = document.createElement('div');
+    var fav = document.createElement('div');
     questionDestination.appendChild(menuCont);
     menuCont.appendChild(questionCont);
     menuCont.appendChild(qstatsCont);
+    menuCont.appendChild(fav);
+    fav.textContent = '☆';
     menuCont.setAttribute('class', 'menuCont');
     qstatsCont.setAttribute('class', 'qstats-cont texttochange');
+    fav.setAttribute('class', 'fav');
     var qroundedScore = Math.round( this.questionScore * 10 ) / 10;
     qstatsCont.textContent = qroundedScore;
     questionCont.setAttribute('class', 'choice-button');
-    questionCont.textContent = questionText;   
+    questionCont.textContent = questionText;
     questionCont.setAttribute('id', questionID);
     questionCont.addEventListener('click', updateQuestionAnalysis);
     changecolor();
+    fav.addEventListener('click', favouriteques);
         };
  
-    function changecolor(){
+function changecolor(){
         var divs = document.querySelectorAll('.texttochange');
         for(var i = 0; i < divs.length; i++){
             if(divs[i].textContent < 2){
@@ -155,8 +160,6 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
             }
         }
     }
-
-   // '#fadc32', '#d7dc50', '#96cd7d', '#5fc3aa', '#32becd', '#2db4d2', '#55a0be', '#969196', '#d27873', '#f0645f', '#00353f', '#ffbffb'
     
 
  function renderSurveys(menuText, idMatch, score, respondents){
@@ -219,7 +222,6 @@ async function updateAnalysis (clickedID) {
     var surveySelection = document.querySelector('#choice-section');
     var data = json.data.survey;
     surveySelection.style.display = 'none';
-    document.body.style.backgroundColor = '#fcfcfc';
     clickedID = this.id;
     console.log(clickedID);
     document.documentElement.scrollTop = 0;
@@ -238,7 +240,7 @@ async function updateQuestionAnalysis (clickedQuestionID) {
     var qdata = json.data.survey.questions;
     var questionSelection = document.querySelector('#question-section');
     questionSelection.style.display = 'none';
-    document.body.style.backgroundColor = '#fcfcfc';
+    favSection.style.display = 'none';
     clickedQuestionID = this.id;
     document.documentElement.scrollTop = 0;
     qdata.forEach(function(qe)
@@ -255,7 +257,7 @@ async function updateQuestionAnalysis (clickedQuestionID) {
 
 function renderQuestionHeader(qe){
     return `
-    <section id="section-a" class="grid">
+    <section id="section-a" class="grid titlearea">
     <div class="content-wrap">
     <h1 class="title">
         ${qe.display_text}
@@ -279,6 +281,7 @@ function renderQuestionAnalysis(qe){
     var votesDisplay = votesStep.toLocaleString();
     return `
     <section class="grid analysisCont">
+    <div class="form-entry-container content-wrap">
     <div class="content-wrap">
             <div class="analysis-wrapper">
             <div>
@@ -292,10 +295,12 @@ function renderQuestionAnalysis(qe){
             </div>
             <hr>
             </hr>
-            <p class="analysisTitle">Votes</p>
+            <p class="analysisTitle">Responses</p>
             <div class="avScoreCont">
-                <p class="avScoreText">${votesDisplay}</p>
-                <canvas id="qtotalVoters"></canvas>
+            <div class="voteCont">
+                <img class="voteIcon" src="images/coloredIcon.png">
+                <p class="voteScoreText">${votesDisplay}</p>
+                </div>
                 </div>
                 <hr></hr>
                 <p class="analysisTitle">Monthly Averages</p>
@@ -319,13 +324,14 @@ function renderQuestionAnalysis(qe){
                 </div>
             </div>
     </div>
+    </div>
 </section>    
     `;
 }
 
 function renderHeader(data) {
     return `
-    <section id="section-a" class="grid">
+    <section id="section-a" class="grid titlearea">
     <div class="content-wrap">
     <h1 class="title">
         ${data.id}
@@ -352,7 +358,7 @@ function renderAnalysis(data){
     var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
     return `
     <section class="grid analysisCont">
-    <div class="content-wrap">
+    <div class="content-wrap form-entry-container">
             <div class="analysis-wrapper">
             <p class="analysisTitle">Average score</p>
             <div class="avScoreCont">
@@ -362,12 +368,14 @@ function renderAnalysis(data){
             </div>
             <hr>
             </hr>
-            <p class="analysisTitle">Votes</p>
+            <p class="analysisTitle">Responses</p>
             <div class="avScoreCont">
-                <p class="avScoreText">${votesDisplay}</p>
-                <canvas id="totalVoters"></canvas>
-                </div>
-                <hr></hr>
+            <div class="voteCont">
+            <img class="voteIcon" src="images/coloredIcon.png">
+            <p class="voteScoreText">${votesDisplay}</p>
+            </div>
+            </div>
+            <hr></hr>
                 <p class="analysisTitle">Monthly Averages</p>
                 <canvas id="monthlySpread">
                 </canvas>
@@ -385,49 +393,6 @@ function renderAnalysis(data){
 }
 
 function createCharts (data, scores, monthlyAv) {
-    var votesStep = data.votes
-    var votesDisplay = votesStep.toLocaleString();
-    var totalVotesChart = document.querySelector('#totalVoters');
-    var ylabel = data.votes + 16000;
-    var thetotalVotersChart = new Chart(totalVotesChart, {
-        type: 'bar',
-        data: {
-            label:'Total Votes',
-            datasets:[{
-                label: 'Responses',
-                backgroundColor: '#d7dc50',
-                data: [data.votes]
-            },
-            {
-            label: 'Non-Responses',
-            backgroundColor: '#d27873',
-            data: [16000]
-            }
-        ],
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    stacked: true,
-                    gridLines: {
-                        color: "rgba(0, 0, 0, 0)",
-                    }
-                }],
-                yAxes: [{
-                    stacked: true,
-                    ticks: {
-                        maxTicksLimit: 2,
-                        max: ylabel,
-                    },
-                    gridlines: {
-                        color: "rgba(0, 0, 0, 0)",
-                    },
-                }]
-            },
-        }
-    });
-
-
     var avScoreChart = document.querySelector('#avScoreChart').getContext('2d');
     var avScoreStep = data.average;
     var avScoreRounded = Math.round( avScoreStep * 10 ) / 10;
@@ -612,47 +577,6 @@ function createCharts (data, scores, monthlyAv) {
 function createQuestionCharts (qe, qmonthlyAv, qscores) {
     var qvotesStep = qe.votes
     var qvotesDisplay = qvotesStep.toLocaleString();
-    var qtotalVotesChart = document.querySelector('#qtotalVoters');
-    var qylabel = qe.votes + 16;
-    var qthetotalVotersChart = new Chart(qtotalVotesChart, {
-        type: 'bar',
-        data: {
-            label:'Total Votes',
-            datasets:[{
-                label: 'Responses',
-                backgroundColor: '#d7dc50',
-                data: [qe.votes]
-            },
-            {
-            label: 'Non-Responses',
-            backgroundColor: '#d27873',
-            data: [16]
-            }
-        ],
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    stacked: true,
-                    gridLines: {
-                        color: "rgba(0, 0, 0, 0)",
-                    }
-                }],
-                yAxes: [{
-                    stacked: true,
-                    ticks: {
-                        maxTicksLimit: 2,
-                        max: qylabel,
-                    },
-                    gridlines: {
-                        color: "rgba(0, 0, 0, 0)",
-                    },
-                }]
-            },
-        }
-    });
-
-
     var qavScoreChart = document.querySelector('#qavScoreChart').getContext('2d');
     var qoutOf = 10 - qe.average;
     var colorToUse;
@@ -699,9 +623,6 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
 
     var qstandardDev = document.querySelector('#qstandardDev').getContext('2d');
     var sdoutOf = 4.5 - qe.std_dev;
-
-
-    //, , , , , , , , , '#00353f', '#ffbffb'
     var qstddev = new Chart(qstandardDev, {
         type: 'doughnut',
         data: {
@@ -858,7 +779,6 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
             cutoutPercentage: 80,
         }
         });
-        
     };
 
 
@@ -868,9 +788,10 @@ function createQuestionCharts (qe, qmonthlyAv, qscores) {
 function renderNavbar () {
     return `
     <div class="triplegrid">
-    <div id="nav1" onclick="goHome()"><a href="#">Home</a></div>
+    <div id="nav1" onclick="goHome()"><a href="#"><img id="houseIcon" src="images/house-icon.png"></a></div>
     <div id="nav2" onclick="goSurveys()"><a href="#">Surveys</a></div>
     <div id="nav3" onclick="goQuestions()"><a href="#">Questions</a></div>
+    <div id="nav4" onclick="goFavourites()"><a href="#">Favourites</a></div>
     </div>
     `;
 };
@@ -883,11 +804,13 @@ function goHome () {
     logo.style.display = 'grid';
     surveyMenu.style.display = 'none';
     questionMenu.style.display = 'none';
-    document.body.style.backgroundColor = '#FDDB2F';
+    favSection.style.display = 'none';
     breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'none';
-    surveyHeader = document.querySelector('#section-a');
-    surveyHeader.style.display = 'none';
+    surveyHeader = document.querySelector('.titlearea');
+    if(surveyHeader !== null){
+        surveyHeader.style.display = 'none';
+    }
     var analysisCont = document.querySelectorAll('.analysisCont');
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
@@ -897,15 +820,19 @@ function goHome () {
 function goSurveys () {
     var nav3Target = document.querySelector('#nav3');
     nav3Target.classList.remove('activeNav');
+    var nav4Target = document.querySelector('#nav4');
+    nav4Target.classList.remove('activeNav');
     var nav2Target = document.querySelector('#nav2');
     nav2Target.setAttribute('class', 'activeNav');
     surveyMenu.style.display = 'grid';
     questionMenu.style.display = 'none';
-    document.body.style.backgroundColor = '#FDDB2F';
+    favSection.style.display = 'none';
     breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'grid';
-    surveyHeader = document.querySelector('#section-a');
-    surveyHeader.style.display = 'none';
+    surveyHeader = document.querySelector('.titlearea');
+    if(surveyHeader !== null){
+        surveyHeader.style.display = 'none';
+    }
     var analysisCont = document.querySelectorAll('.analysisCont');
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
@@ -913,26 +840,66 @@ function goSurveys () {
 };
 
 function goQuestions () {
+    var nav4Target = document.querySelector('#nav4');
+    nav4Target.classList.remove('activeNav');
     var nav2Target = document.querySelector('#nav2');
-nav2Target.classList.remove('activeNav'); 
-var nav3Target = document.querySelector('#nav3');
-nav3Target.setAttribute('class', 'activeNav');
+    nav2Target.classList.remove('activeNav'); 
+    var nav3Target = document.querySelector('#nav3');
+    nav3Target.setAttribute('class', 'activeNav');
     surveyMenu.style.display = 'none';
+    favSection.style.display = 'none';
     questionMenu.style.display = 'grid';
-    document.body.style.backgroundColor = '#FDDB2F';
     breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'grid';
-    surveyHeader = document.querySelector('#section-a');
-    surveyHeader.style.display = 'none';
+    surveyHeader = document.querySelector('.titlearea');
+    if(surveyHeader !== null){
+        surveyHeader.style.display = 'none';
+    }
     var analysisCont = document.querySelectorAll('.analysisCont');
     for (var x = 0; x < analysisCont.length; x++) {
         analysisCont[x].style.display = 'none';
 }
 };
 
+function goFavourites () {
+    var nav4Target = document.querySelector('#nav4');
+    nav4Target.setAttribute('class', 'activeNav');
+    var nav2Target = document.querySelector('#nav2');
+    nav2Target.classList.remove('activeNav'); 
+    var nav3Target = document.querySelector('#nav3');
+    nav3Target.classList.remove('activeNav'); 
+    surveyMenu.style.display = 'none';
+    questionMenu.style.display = 'none';
+    favSection.style.display = 'grid';
+    breadcrumb = document.querySelector('.triplegrid');
+    breadcrumb.style.display = 'grid';
+    surveyHeader = document.querySelector('.titlearea');
+    if(surveyHeader !== null){
+        surveyHeader.style.display = 'none';
+    }
+    var analysisCont = document.querySelectorAll('.analysisCont');
+    for (var x = 0; x < analysisCont.length; x++) {
+        analysisCont[x].style.display = 'none';
+}
+favmessage();
+    };
+
+function favmessage(){
+    var toappend = document.getElementById('favouriteTarget');
+    var favcheck = document.querySelectorAll('.ques');
+    var nofavmessagelol = document.querySelector('.nofavs');
+    console.log(favcheck);
+    if(favcheck.length >=1){
+        nofavmessage.style.display = 'none';
+        favavScore.style.display = 'block';
+    } else {
+        nofavmessage.style.display = 'block';
+        favavScore.style.display = 'none';
+    }
+}
+
 function alogout() {
     var cookies = document.cookie.split(";");
-
     for (var i = 0; i < cookies.length; i++) {
         var cookie = cookies[i];
         var eqPos = cookie.indexOf("=");
@@ -941,39 +908,63 @@ function alogout() {
     }
     window.location.assign('file:///C:/Users/Alex Johnston/Desktop/H-appy/landing.html');
 };
-$( document ).ready(function() {
-    $("#questionTarget").sortable({
-    placeholder: 'slide-placeholder',
-   axis: "y",
-   revert: 150,
-   start: function(e, ui){
-       
-       placeholderHeight = ui.item.outerHeight();
-       ui.placeholder.height(placeholderHeight + 15);
-       $('<div class="slide-placeholder-animator" data-height="' + placeholderHeight + '"></div>').insertAfter(ui.placeholder);
-   
-   },
-   change: function(event, ui) {
-       
-       ui.placeholder.stop().height(0).animate({
-           height: ui.item.outerHeight() + 15
-       }, 300);
-       
-       placeholderAnimatorHeight = parseInt($(".slide-placeholder-animator").attr("data-height"));
-       
-       $(".slide-placeholder-animator").stop().height(placeholderAnimatorHeight + 15).animate({
-           height: 0
-       }, 300, function() {
-           $(this).remove();
-           placeholderHeight = ui.item.outerHeight();
-           $('<div class="slide-placeholder-animator" data-height="' + placeholderHeight + '"></div>').insertAfter(ui.placeholder);
-       });
-       
-   },
-   stop: function(e, ui) {
-       
-       $(".slide-placeholder-animator").remove();
-       
-   },
-});
-});
+
+function favouriteques(){
+    var x = event.target;
+    x.setAttribute('class', 'favourited');
+    var a = (x.parentNode);
+    var clone = a.cloneNode(true);
+    document.querySelector('#favouriteTarget').appendChild(clone);
+    clone.setAttribute('class', 'menuCont ques');
+    var clonebutton = document.getElementById('favouriteTarget').querySelectorAll('.choice-button');
+    for (i=0; i<clonebutton.length; i++){
+        clonebutton[i].addEventListener('click', updateQuestionAnalysis);
+    }
+    changecolor();
+    var favToggle = document.getElementById('favouriteTarget').querySelectorAll('.favourited');
+    for (a=0; a<favToggle.length; a++){
+        favToggle[a].addEventListener('click', unfavourite);
+    }
+    x.removeEventListener('click', favouriteques);
+    x.addEventListener('click', softunfavourite);
+};
+
+function unfavourite(){
+    var u = event.target;
+    u.classList.remove('favourited');
+    u.setAttribute('class', 'fav');
+    var p = (u.parentNode);
+    var n = (p.parentNode);
+    var currentid = p.querySelector('.choice-button');
+    var checker = currentid.id;
+    n.removeChild(p);
+    var loopa = document.getElementById('questionTarget').querySelectorAll('.choice-button');
+    for(x=0; x<loopa.length;x++){
+        if (loopa[x].id == checker){
+            var torem = loopa[x].parentNode;
+            var yolo = torem.querySelector('.favourited');
+            yolo.classList.remove('favourited');
+            yolo.setAttribute('class', 'fav');
+        }
+    }
+};
+
+function softunfavourite(){
+    var x = event.target;
+    x.classList.remove('class', 'favourited');
+    x.setAttribute('class', 'fav');
+    var w = (x.parentNode);
+    var q = (w.parentNode);
+    var currentid = w.querySelector('.choice-button');
+    var checker = currentid.id
+    var poopa = document.getElementById('favouriteTarget').querySelectorAll('.choice-button');
+    for(s=0; s<poopa.length; s++){
+        if(poopa[s].id == checker){
+            var potty = poopa[s];
+            var getrid = poopa[s].parentNode;
+            var above = getrid.parentNode;
+            above.removeChild(getrid);
+    }
+}
+    x.addEventListener('click', favouriteques);
+};
