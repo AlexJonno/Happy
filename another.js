@@ -22,7 +22,7 @@ submitButton.addEventListener('click', submitInformation);
 
 async function redirect(id, apikey, subdomain){
   if(id.length > 0 && apikey.length > 0 && subdomain.length > 0){
-  const res = await fetch('https://' + subdomain + '.' + url + 'campaigns?' + id + '&' + apikey);
+  const res = await fetch('https://' + subdomain + '.' + url + 'surveys/50/overview?' + id + '&' + apikey);
   const json = await res.json();
   var message = json.error;
   if (message == true){
@@ -52,3 +52,16 @@ function fillAllFieldsMessage(){
   <p id="fillFields">Error: Please fill all fields</p>
   `
 };
+
+function prepopulate(){
+  if(document.cookie !== null){
+  var APIValue = document.cookie.replace(/(?:(?:^|.*;\s*)api_key\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+  var IDValue = document.cookie.replace(/(?:(?:^|.*;\s*)api_id\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+  var DomainValue = document.cookie.replace(/(?:(?:^|.*;\s*)subdomain\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+  idAnswer.value = IDValue;
+  apiAnswer.value = APIValue;
+  subdomainAnswer.value = DomainValue;
+  }
+}
+
+prepopulate();

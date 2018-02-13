@@ -14,6 +14,11 @@ const questionMenu = document.querySelector('#question-section');
 const favSection = document.querySelector('#favourite-section');
 var nofavmessage = document.querySelector('.nofavs');
 var favavScore = document.querySelector('#favavScore');
+var favsurveytitle = document.querySelector('#favsurveytitle');
+var favquestiontitle = document.querySelector('#favquestiontitle');
+var favQData = localStorage.getItem('favQData') ? JSON.parse(localStorage.getItem('favQData')) : [];
+var favSData = localStorage.getItem('favSData') ? JSON.parse(localStorage.getItem('favSData')) : [];
+
 // RENDER HOME MENU
 
 function renderFirstChoice () {
@@ -62,10 +67,15 @@ var ourRequest = new XMLHttpRequest();
 ourRequest.open('GET', newurl + 'surveys/50/overview?' + 'api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87');
 ourRequest.onload = function(){
     var surveyList = JSON.parse(ourRequest.responseText);
-    findSurveys();
     // getCookie();
+    if(surveyList.messages == "Invalid API credentials"){
+        alogout();
+    } else {
+    findSurveys();
     firstChoice.innerHTML = renderFirstChoice();
     surveyMenu.style.display = 'none';
+    setTimeout(populateFavs, 300);}
+
  /* if('serviceWorker' in navigator) {
      try {
           navigator.serviceWorker.register('sw.js');
@@ -78,7 +88,7 @@ ourRequest.onload = function(){
 ourRequest.send();
 
 var anotherRequest = new XMLHttpRequest();
-anotherRequest.open('GET', url + 'surveys/09/overview?' + apiid + '&' + key);
+anotherRequest.open('GET', newurl + 'surveys/50/overview?api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87'); //url + 'surveys/09/overview?' + apiid + '&' + key);
 anotherRequest.onload = function(){
     var questionList = JSON.parse(anotherRequest.responseText);
     findQuestions();
@@ -100,15 +110,33 @@ function findQuestions(){
     var questionList = JSON.parse(anotherRequest.responseText);
     var anotherObjList = questionList.data.survey.questions;
     anotherObjList.forEach(element => {
-        this.questionText = element.display_text;
-        this.questionID = element.id;
-        this.questionScore = element.average;
-        this.questionVotes = element.votes;
-            renderQuestions(questionText, questionID, questionScore);
+        if(element.is_parent == true && element.is_multi == false){
+            this.questionText = element.display_text;
+            this.questionID = element.id;
+            this.questionScore = element.average;
+            this.questionVotes = element.votes;
+                renderQuestions(questionText, questionID, questionScore);
+        } else if (element.is_parent == true && element.is_multi == true){
+            this.questionText = element.display_text;
+            this.questionID = element.id;
+                renderQuestions(questionText, questionID);
+            element.children.forEach(el => {
+                this.questionText = el.display_text;
+                this.questionID = el.id;
+                this.questionScore = el.average;
+                this.questionVotes = el.votes;
+                renderQuestions(questionText, questionID, questionScore);
+            })
+        }
+    //    this.questionText = element.display_text;
+    //    this.questionID = element.id;
+    //    this.questionScore = element.average;
+    //    this.questionVotes = element.votes;
+    //        renderQuestions(questionText, questionID, questionScore);
             })
             };
 
-function renderQuestions(questionText, questionID, questionScore, questionVotes){
+function renderQuestions(questionText, questionID, questionScore){
     var questionDestination = document.querySelector('#questionTarget');
     var questionCont = document.createElement('div');
     var qstatsCont = document.createElement('div');
@@ -118,15 +146,20 @@ function renderQuestions(questionText, questionID, questionScore, questionVotes)
     menuCont.appendChild(questionCont);
     menuCont.appendChild(qstatsCont);
     menuCont.appendChild(fav);
-    fav.textContent = '☆';
+    fav.textContent = '★';
     menuCont.setAttribute('class', 'menuCont');
     qstatsCont.setAttribute('class', 'qstats-cont texttochange');
     fav.setAttribute('class', 'fav');
     var qroundedScore = Math.round( this.questionScore * 10 ) / 10;
     qstatsCont.textContent = qroundedScore;
-    questionCont.setAttribute('class', 'choice-button');
+    if(questionScore == null){
+        questionCont.setAttribute('id', 'parentquestion');
+    } else {
+        questionCont.setAttribute('id', questionID);
+    }
+    questionCont.setAttribute('class', 'choice-button quesbtn');
     questionCont.textContent = questionText;
-    questionCont.setAttribute('id', questionID);
+    
     questionCont.addEventListener('click', updateQuestionAnalysis);
     changecolor();
     fav.addEventListener('click', favouriteques);
@@ -156,30 +189,42 @@ function changecolor(){
             } else if (divs[i].textContent == 10){
                 divs[i].style.backgroundColor = '#fadc32';
             } else {
-                divs[i].style.backgroundColor = '#fcfcfc';
+                divs[i].style.backgroundColor = 'white';
             }
         }
     }
     
 
- function renderSurveys(menuText, idMatch, score, respondents){
+ function renderSurveys(menuText, idMatch, score){
     var surveyDestination = document.querySelector('#surveyTarget');
     var surveyCont = document.createElement('div');
     var statsCont = document.createElement('div');
     var menuCont = document.createElement('div');
+    var fav = document.createElement('div');
     surveyDestination.appendChild(menuCont);
     menuCont.appendChild(surveyCont);
     menuCont.appendChild(statsCont);
-    menuCont.setAttribute('class', 'menuCont');
+    menuCont.appendChild(fav);
+    menuCont.setAttribute('class', 'menuCont sur');
     statsCont.setAttribute('class', 'stats-cont texttochange');
+    fav.textContent = '☆';
     var roundedScore = Math.round( this.score * 10 ) / 10;
     statsCont.textContent = roundedScore;
-    surveyCont.setAttribute('class', 'choice-button');
+    surveyCont.setAttribute('class', 'choice-button surveybtn');
+    fav.setAttribute('class', 'fav');
     surveyCont.textContent = menuText;
     surveyCont.setAttribute('id', idMatch);
     surveyCont.addEventListener('click', updateAnalysis);
+    fav.addEventListener('click', favouriteques);
     changecolor();
         };
+
+        
+        
+        
+        
+        
+            
     // surveyDestination.appendChild(surveyCont);
     // surveyDestination.appendChild(statsCont);
     // statsCont.setAttribute('class', 'stats-cont');
@@ -232,18 +277,41 @@ async function updateAnalysis (clickedID) {
   };
 
 async function updateQuestionAnalysis (clickedQuestionID) {
-    strURL = url + 'surveys/09/overview?' + apiid + '&' + key;
+    strURL = newurl + 'surveys/50/overview?api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87'; //'surveys/09/overview?' + apiid + '&' + key; 
     const res = await fetch(strURL);
     const json = await res.json();
     var qmonthlyAv = json.data.survey.breakdown;
     var qscores = json.data.survey.scores;
-    var qdata = json.data.survey.questions;
+    var qdata = json.data.survey.questions; //[0].children;
     var questionSelection = document.querySelector('#question-section');
     questionSelection.style.display = 'none';
     favSection.style.display = 'none';
     clickedQuestionID = this.id;
     document.documentElement.scrollTop = 0;
-    qdata.forEach(function(qe)
+    qdata.forEach(questelement => {
+        if(questelement.is_parent == true && questelement.is_multi == true){
+            var childloop = questelement.children;
+            childloop.forEach(qe =>{
+                if(qe.id == clickedQuestionID){
+                    header.innerHTML = renderQuestionHeader(qe);
+                    main.innerHTML = renderQuestionAnalysis(qe);
+                    var qchartTarget = document.querySelector('#qavScoreChart');
+                    qchartTarget.innerHTML = createQuestionCharts(qe, qmonthlyAv, qscores);
+                }
+            }) 
+            } else if(questelement.is_parent == true && questelement.is_multi == false){
+                    if(questelement.id == clickedQuestionID){
+                        qe = questelement;
+                        header.innerHTML = renderQuestionHeader(qe);
+                        main.innerHTML = renderQuestionAnalysis(qe);
+                        var qchartTarget = document.querySelector('#qavScoreChart');
+                        qchartTarget.innerHTML = createQuestionCharts(qe, qmonthlyAv, qscores);
+                    }
+            }
+        })};
+
+    
+ /*   qdata.forEach(function(qe)
     {
        if (qe.id == clickedQuestionID)
        {
@@ -253,7 +321,23 @@ async function updateQuestionAnalysis (clickedQuestionID) {
           qchartTarget.innerHTML = createQuestionCharts(qe, qmonthlyAv, qscores);
        }
     });
-  };
+  }; */
+
+/*  anotherObjList.forEach(element => {
+    if(element.is_parent == true){
+        this.questionText = element.display_text;
+        this.questionID = element.id;
+        this.questionScore = element.average;
+        this.questionVotes = element.votes;
+            renderQuestions(questionText, questionID, questionScore);
+        element.children.forEach(el => {
+            this.questionText = el.display_text;
+            this.questionID = el.id;
+            this.questionScore = el.average;
+            this.questionVotes = el.votes;
+            renderQuestions(questionText, questionID, questionScore);
+        })
+    } */
 
 function renderQuestionHeader(qe){
     return `
@@ -874,27 +958,58 @@ function goFavourites () {
     breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'grid';
     surveyHeader = document.querySelector('.titlearea');
-    if(surveyHeader !== null){
-        surveyHeader.style.display = 'none';
-    }
+        if(surveyHeader !== null){
+            surveyHeader.style.display = 'none';
+        }
     var analysisCont = document.querySelectorAll('.analysisCont');
-    for (var x = 0; x < analysisCont.length; x++) {
-        analysisCont[x].style.display = 'none';
-}
+        for (var x = 0; x < analysisCont.length; x++) {
+            analysisCont[x].style.display = 'none';
+    }
 favmessage();
     };
 
+  function populateFavs(){
+        var currentfavQs = JSON.parse(localStorage.getItem('favQData'));
+        var currentfavSs = localStorage.getItem('favSData');
+        var checkfavsurveyscont = document.getElementById('surveyTarget').querySelectorAll('.menuCont');
+        var checkfavquestionscont = document.getElementById('questionTarget').querySelectorAll('.menuCont');
+        checkfavquestionscont.forEach(element => {
+            var checkid = element.childNodes[0].id;
+            if (currentfavQs.includes(checkid) == true){
+                var simulate =  element.childNodes[2];
+               simulate.click(favouriteques);
+            }
+        })
+        checkfavsurveyscont.forEach(elemento =>{
+            var checkidS = elemento.childNodes[0].id;
+            if(currentfavSs.includes(checkidS) == true){
+                var simumate = elemento.childNodes[2];
+                simumate.click(favouriteques);
+            }
+        })
+    };
+
 function favmessage(){
-    var toappend = document.getElementById('favouriteTarget');
+    var surveycheck = document.getElementById('favouriteTarget').querySelectorAll('.menuCont');
     var favcheck = document.querySelectorAll('.ques');
+    var questioncheck = document.getElementById('favouriteTarget2').querySelectorAll('.menuCont');
     var nofavmessagelol = document.querySelector('.nofavs');
-    console.log(favcheck);
     if(favcheck.length >=1){
         nofavmessage.style.display = 'none';
         favavScore.style.display = 'block';
     } else {
         nofavmessage.style.display = 'block';
         favavScore.style.display = 'none';
+    }
+    if(surveycheck.length < 1){
+        favsurveytitle.style.display = 'none';
+    } else {
+        favsurveytitle.style.display = 'block';
+    }
+    if(questioncheck.length < 1){
+        favquestiontitle.style.display = 'none';
+    } else {
+        favquestiontitle.style.display = 'block';
     }
 }
 
@@ -914,16 +1029,41 @@ function favouriteques(){
     x.setAttribute('class', 'favourited');
     var a = (x.parentNode);
     var clone = a.cloneNode(true);
-    document.querySelector('#favouriteTarget').appendChild(clone);
-    clone.setAttribute('class', 'menuCont ques');
-    var clonebutton = document.getElementById('favouriteTarget').querySelectorAll('.choice-button');
-    for (i=0; i<clonebutton.length; i++){
+    var locationtest = (a.parentNode);
+    if (locationtest.id == 'surveyTarget'){
+        var c = a.childNodes[0];
+        if (favSData.includes(c.id) == false){
+            favSData.push(c.id);
+        }
+        var SJSONready = JSON.stringify(favSData);
+        localStorage.setItem('favSData', SJSONready);
+        document.querySelector('#favouriteTarget').appendChild(clone);
+        clone.setAttribute('class', 'menuCont ques sur');
+        var clonebutton = document.getElementById('favouriteTarget').querySelectorAll('.surveybtn');
+        for (i=0; i<clonebutton.length; i++){
+        clonebutton[i].addEventListener('click', updateAnalysis);
+    }} else {
+        var cee = a.childNodes[0];
+        if (favQData.includes(cee.id) == false){
+            favQData.push(cee.id);
+        }
+        var QJSONready = JSON.stringify(favQData);
+        localStorage.setItem('favQData', QJSONready);
+        document.querySelector('#favouriteTarget2').appendChild(clone);
+        clone.setAttribute('class', 'menuCont ques quest');
+        var clonebutton = document.getElementById('favouriteTarget2').querySelectorAll('.quesbtn');
+        for (i=0; i<clonebutton.length; i++){
         clonebutton[i].addEventListener('click', updateQuestionAnalysis);
     }
+}
     changecolor();
     var favToggle = document.getElementById('favouriteTarget').querySelectorAll('.favourited');
     for (a=0; a<favToggle.length; a++){
         favToggle[a].addEventListener('click', unfavourite);
+    }
+    var anotherToggle = document.getElementById('favouriteTarget2').querySelectorAll('.favourited');
+    for (b=0; b<anotherToggle.length; b++){
+        anotherToggle[b].addEventListener('click', unfavourite);
     }
     x.removeEventListener('click', favouriteques);
     x.addEventListener('click', softunfavourite);
@@ -938,7 +1078,32 @@ function unfavourite(){
     var currentid = p.querySelector('.choice-button');
     var checker = currentid.id;
     n.removeChild(p);
-    var loopa = document.getElementById('questionTarget').querySelectorAll('.choice-button');
+    if (p.classList.contains('sur') == true){
+            var woopa = document.getElementById('surveyTarget').querySelectorAll('.choice-button');
+            var idcheck = p.childNodes[0];
+            for (k=0; k<favSData.length; k++){
+                if(idcheck.id == favSData[k]){
+                    favSData.splice(k, 1);
+                    localStorage.setItem('favSData', JSON.stringify(favSData));
+                }
+            }
+            for(i=0; i<woopa.length;i++){
+                if (woopa[i].id == checker){
+                    var poorem = woopa[i].parentNode;
+                    var molo = poorem.querySelector('.favourited');
+                    molo.classList.remove('favourited');
+                    molo.setAttribute('class', 'fav');
+                }
+            }
+    } else {
+            var loopa = document.getElementById('questionTarget').querySelectorAll('.choice-button');
+            var qidcheck = p.childNodes[0];
+            for (l=0; l<favQData.length; l++){
+                if(qidcheck.id == favQData[l]){
+                    favQData.splice(l, 1);
+                    localStorage.setItem('favQData', JSON.stringify(favQData));
+                }
+            }
     for(x=0; x<loopa.length;x++){
         if (loopa[x].id == checker){
             var torem = loopa[x].parentNode;
@@ -947,7 +1112,10 @@ function unfavourite(){
             yolo.setAttribute('class', 'fav');
         }
     }
+    }
+    favmessage();
 };
+
 
 function softunfavourite(){
     var x = event.target;
@@ -956,15 +1124,38 @@ function softunfavourite(){
     var w = (x.parentNode);
     var q = (w.parentNode);
     var currentid = w.querySelector('.choice-button');
-    var checker = currentid.id
-    var poopa = document.getElementById('favouriteTarget').querySelectorAll('.choice-button');
-    for(s=0; s<poopa.length; s++){
-        if(poopa[s].id == checker){
-            var potty = poopa[s];
-            var getrid = poopa[s].parentNode;
-            var above = getrid.parentNode;
-            above.removeChild(getrid);
+    var checker = currentid.id;
+    if(w.classList.contains('sur') == true){
+        var poopa = document.getElementById('favouriteTarget').querySelectorAll('.choice-button');
+        for (j=0; j<favSData.length; j++){
+            if(checker == favSData[j]){
+                favSData.splice(j, 1);
+                localStorage.setItem('favSData', JSON.stringify(favSData));
+            }
+        }
+        for(s=0; s<poopa.length; s++){
+            if(poopa[s].id == checker){
+                var potty = poopa[s];
+                var getrid = poopa[s].parentNode;
+                var above = getrid.parentNode;
+                above.removeChild(getrid);
     }
 }
+    } else {
+        var goopa = document.getElementById('favouriteTarget2').querySelectorAll('.choice-button');
+        for (n=0; n<favQData.length; n++){
+            if(checker == favQData[n]){
+                favQData.splice(n, 1);
+                localStorage.setItem('favQData', JSON.stringify(favQData));
+            }
+        for(c=0; c<goopa.length; c++){
+            if(goopa[c].id == checker){
+                var lotty = goopa[c];
+                var getitout = goopa[c].parentNode;
+                var higher = getitout.parentNode;
+                higher.removeChild(getitout);
+        }
+    }
+    }}
     x.addEventListener('click', favouriteques);
 };
