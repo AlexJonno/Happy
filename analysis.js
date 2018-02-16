@@ -3,6 +3,8 @@ const newurl = 'https://thehappinessindicator.the-happiness-index.com/api.json/'
 const key = 'api_key=82be191d81c3bc659805c6c7801cd17b';
 var apiid = 'api_id=391121'; // document.cookie
 const main = document.querySelector('#analysis');
+const questTarget = document.querySelector('#questTarget');
+const questionListTarget = document.querySelector('#questionListTarget');
 const header = document.querySelector('#header');
 const navBar = document.querySelector('#navBar');
 const firstChoice = document.querySelector('#firstChoice-section');
@@ -18,6 +20,7 @@ var favsurveytitle = document.querySelector('#favsurveytitle');
 var favquestiontitle = document.querySelector('#favquestiontitle');
 var favQData = localStorage.getItem('favQData') ? JSON.parse(localStorage.getItem('favQData')) : [];
 var favSData = localStorage.getItem('favSData') ? JSON.parse(localStorage.getItem('favSData')) : [];
+var withinSurvey = false;
 
 // RENDER HOME MENU
 
@@ -156,13 +159,12 @@ function renderQuestions(questionText, questionID, questionScore){
         questionCont.setAttribute('id', 'parentquestion');
     } else {
         questionCont.setAttribute('id', questionID);
+        questionCont.addEventListener('click', updateQuestionAnalysis);
+        fav.addEventListener('click', favouriteques);
     }
     questionCont.setAttribute('class', 'choice-button quesbtn');
     questionCont.textContent = questionText;
-    
-    questionCont.addEventListener('click', updateQuestionAnalysis);
     changecolor();
-    fav.addEventListener('click', favouriteques);
         };
  
 function changecolor(){
@@ -207,7 +209,7 @@ function changecolor(){
     menuCont.appendChild(fav);
     menuCont.setAttribute('class', 'menuCont sur');
     statsCont.setAttribute('class', 'stats-cont texttochange');
-    fav.textContent = '☆';
+    fav.textContent = '★';
     var roundedScore = Math.round( this.score * 10 ) / 10;
     statsCont.textContent = roundedScore;
     surveyCont.setAttribute('class', 'choice-button surveybtn');
@@ -260,6 +262,7 @@ function nav2QuestionSelection () {
 // CREATE ANALYSIS SCREEN
 
 async function updateAnalysis (clickedID) {
+    withinSurvey = true;
     const res = await fetch(newurl + 'surveys/50/overview?' + 'api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87');
     const json = await res.json();
     var monthlyAv = json.data.survey.breakdown;
@@ -268,15 +271,41 @@ async function updateAnalysis (clickedID) {
     var data = json.data.survey;
     surveySelection.style.display = 'none';
     clickedID = this.id;
-    console.log(clickedID);
     document.documentElement.scrollTop = 0;
     header.innerHTML = renderHeader(data);
     main.innerHTML = renderAnalysis(data);
     var chartTarget = document.querySelector('#avScoreChart');
     chartTarget.innerHTML = createCharts(data, scores, monthlyAv);
+    var QListTitle = document.createElement('div');
+    QListTitle.textContent = 'Questions in this Survey';
+    QListTitle.setAttribute('class', 'analysisTitle');
+    questionListTarget.appendChild(QListTitle);
+    var qe = data.questions;
+    qe.forEach(questelement => {
+        if(questelement.is_parent == true && questelement.is_multi == true){
+            qe = questelement;
+            renderQuestionList(qe);
+            var childloop = questelement.children;
+            childloop.forEach(qe =>{
+                    renderQuestionList(qe);
+            }) 
+            } else if(questelement.is_parent == true && questelement.is_multi == false){
+                        qe = questelement;
+                        renderQuestionList(qe);
+            }
+        })
+        changecolor();
+        sessionStorage.setItem('lastsurvey', clickedID);
   };
 
+function delayQuestionList(){
+    questTarget.style.display = 'none';
+}
+
 async function updateQuestionAnalysis (clickedQuestionID) {
+    var nav2Target = document.querySelector('#nav2');
+    nav2Target.classList.remove('activeNav');
+    setTimeout(delayQuestionList, 500);
     strURL = newurl + 'surveys/50/overview?api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87'; //'surveys/09/overview?' + apiid + '&' + key; 
     const res = await fetch(strURL);
     const json = await res.json();
@@ -308,7 +337,19 @@ async function updateQuestionAnalysis (clickedQuestionID) {
                         qchartTarget.innerHTML = createQuestionCharts(qe, qmonthlyAv, qscores);
                     }
             }
-        })};
+        })
+        if(withinSurvey == true){
+            backbutton();
+        }
+    };
+
+    function backbutton(){
+        back = document.createElement('div');
+        back.textContent = 'Back to Survey';
+        document.querySelector('.analysis-wrapper').appendChild(back);
+        questionListTarget.innerHTML = "";
+        back.addEventListener('click', updateAnalysis);
+    }
 
     
  /*   qdata.forEach(function(qe)
@@ -435,7 +476,28 @@ function renderHeader(data) {
             <input id="filter-button" type="button" value="Filter">
 */
 
-function renderAnalysis(data){
+function renderQuestionList(qe){
+    questTarget.style.display = 'grid';
+    var totalCont = document.createElement('div');
+    var questionObject = document.createElement('div');
+    var scoreObject = document.createElement('div');
+    questionObject.textContent = qe.display_text;
+    scoreObject.textContent = qe.average;
+    questionListTarget.appendChild(totalCont); 
+    totalCont.appendChild(questionObject);
+    totalCont.setAttribute('class', 'totalCont');
+    questionObject.setAttribute('class', 'questionListCont');
+    if(qe.is_parent == true && qe.is_multi == true){
+        questionObject.setAttribute('class', 'parentQ');
+    } else {
+        questionObject.setAttribute('id', qe.id);
+        totalCont.appendChild(scoreObject);
+        scoreObject.setAttribute('class', 'questionListContScores texttochange');
+        questionObject.addEventListener('click', updateQuestionAnalysis);
+    }
+};
+
+function renderAnalysis(data, qe){
     var votesStep = data.votes
     var votesDisplay = votesStep.toLocaleString();
     var avScoreStep = data.average;
@@ -884,11 +946,14 @@ function renderNavbar () {
 
 function goHome () {
     homeSelection = document.querySelector('#home-selection');
+    withinSurvey = false;
+   questionListTarget.innerHTML = "";
     homeSelection.style.display = 'block';
     logo.style.display = 'grid';
     surveyMenu.style.display = 'none';
     questionMenu.style.display = 'none';
     favSection.style.display = 'none';
+    questTarget.style.display = 'none';
     breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'none';
     surveyHeader = document.querySelector('.titlearea');
@@ -902,6 +967,8 @@ function goHome () {
 };
 
 function goSurveys () {
+    withinSurvey = false;
+    questionListTarget.innerHTML = "";
     var nav3Target = document.querySelector('#nav3');
     nav3Target.classList.remove('activeNav');
     var nav4Target = document.querySelector('#nav4');
@@ -909,6 +976,7 @@ function goSurveys () {
     var nav2Target = document.querySelector('#nav2');
     nav2Target.setAttribute('class', 'activeNav');
     surveyMenu.style.display = 'grid';
+    questTarget.style.display = 'none';
     questionMenu.style.display = 'none';
     favSection.style.display = 'none';
     breadcrumb = document.querySelector('.triplegrid');
@@ -924,6 +992,8 @@ function goSurveys () {
 };
 
 function goQuestions () {
+    withinSurvey = false;
+    questionListTarget.innerHTML = "";
     var nav4Target = document.querySelector('#nav4');
     nav4Target.classList.remove('activeNav');
     var nav2Target = document.querySelector('#nav2');
@@ -932,6 +1002,7 @@ function goQuestions () {
     nav3Target.setAttribute('class', 'activeNav');
     surveyMenu.style.display = 'none';
     favSection.style.display = 'none';
+    questTarget.style.display = 'none';
     questionMenu.style.display = 'grid';
     breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'grid';
@@ -946,6 +1017,8 @@ function goQuestions () {
 };
 
 function goFavourites () {
+    withinSurvey = false;
+    questionListTarget.innerHTML = "";
     var nav4Target = document.querySelector('#nav4');
     nav4Target.setAttribute('class', 'activeNav');
     var nav2Target = document.querySelector('#nav2');
@@ -955,6 +1028,7 @@ function goFavourites () {
     surveyMenu.style.display = 'none';
     questionMenu.style.display = 'none';
     favSection.style.display = 'grid';
+    questTarget.style.display = 'none';
     breadcrumb = document.querySelector('.triplegrid');
     breadcrumb.style.display = 'grid';
     surveyHeader = document.querySelector('.titlearea');
