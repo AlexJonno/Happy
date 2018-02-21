@@ -218,11 +218,11 @@ Choice Page Styles
      font-family: 'Nunito';
 }
 
-#parentquestion{
-    background: #5A637C;
-    width: 96%;
-    z-index: 999;
-    margin: 10px 0 5px 0;
+.parentquestion{
+    background: #5A637C !important;
+    width: 96% !important;
+    z-index: 999 !important;
+    margin: 10px 0 5px 0 !important;
 }
 
 
@@ -489,9 +489,9 @@ canvas, .avScoreCont {
     float: right;
     height: 32px;
     display: block;
-    transform: translateY(-50%);
+    transform: translateY(-25%);
     line-height: 32px;
-    top: 50%;
+    top: 25%;
     right: 0;
  }
 
@@ -500,7 +500,7 @@ canvas, .avScoreCont {
  margin: 5px 0 5px 0;
  float: left;
  border-bottom: 0.5px solid grey;
- padding: 0 4px 0 4px;
+ padding: 0 4px 12px 4px;
  }
 
  .parentQ{
@@ -527,5 +527,12 @@ canvas, .avScoreCont {
 
  .totalCont{
      position: relative;
-     padding: 8px 0 0 0;
+ }
+
+ #backbutton{
+     height: 26px;
+     width: auto;
+     position: relative;
+     left: 10px;
+     top: 7px;
  }

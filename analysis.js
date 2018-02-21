@@ -21,6 +21,7 @@ var favquestiontitle = document.querySelector('#favquestiontitle');
 var favQData = localStorage.getItem('favQData') ? JSON.parse(localStorage.getItem('favQData')) : [];
 var favSData = localStorage.getItem('favSData') ? JSON.parse(localStorage.getItem('favSData')) : [];
 var withinSurvey = false;
+var backButtonHeight = false;
 
 // RENDER HOME MENU
 
@@ -77,7 +78,7 @@ ourRequest.onload = function(){
     findSurveys();
     firstChoice.innerHTML = renderFirstChoice();
     surveyMenu.style.display = 'none';
-    setTimeout(populateFavs, 300);}
+    setTimeout(populateFavs, 400);}
 
  /* if('serviceWorker' in navigator) {
      try {
@@ -114,21 +115,24 @@ function findQuestions(){
     var anotherObjList = questionList.data.survey.questions;
     anotherObjList.forEach(element => {
         if(element.is_parent == true && element.is_multi == false){
+            this.isParent = element.is_parent;
             this.questionText = element.display_text;
             this.questionID = element.id;
             this.questionScore = element.average;
             this.questionVotes = element.votes;
-                renderQuestions(questionText, questionID, questionScore);
+                renderQuestions(questionText, questionID, questionScore, isParent);
         } else if (element.is_parent == true && element.is_multi == true){
             this.questionText = element.display_text;
             this.questionID = element.id;
                 renderQuestions(questionText, questionID);
             element.children.forEach(el => {
+                this.parentID = element.id;
+                this.isParent = el.is_parent;
                 this.questionText = el.display_text;
                 this.questionID = el.id;
                 this.questionScore = el.average;
                 this.questionVotes = el.votes;
-                renderQuestions(questionText, questionID, questionScore);
+                renderQuestions(questionText, questionID, questionScore, isParent, parentID);
             })
         }
     //    this.questionText = element.display_text;
@@ -139,7 +143,7 @@ function findQuestions(){
             })
             };
 
-function renderQuestions(questionText, questionID, questionScore){
+function renderQuestions(questionText, questionID, questionScore, isParent, parentID){
     var questionDestination = document.querySelector('#questionTarget');
     var questionCont = document.createElement('div');
     var qstatsCont = document.createElement('div');
@@ -156,13 +160,19 @@ function renderQuestions(questionText, questionID, questionScore){
     var qroundedScore = Math.round( this.questionScore * 10 ) / 10;
     qstatsCont.textContent = qroundedScore;
     if(questionScore == null){
-        questionCont.setAttribute('id', 'parentquestion');
-    } else {
         questionCont.setAttribute('id', questionID);
+        questionCont.setAttribute('class', 'choice-button quesbtn parentquestion');
+    } else if(isParent == true && questionScore !== null){
+                questionCont.setAttribute('id', questionID);
         questionCont.addEventListener('click', updateQuestionAnalysis);
         fav.addEventListener('click', favouriteques);
+        questionCont.setAttribute('class', 'choice-button quesbtn');
+    }   else {
+            questionCont.setAttribute('id', questionID);
+            questionCont.addEventListener('click', updateQuestionAnalysis);
+            fav.addEventListener('click', favouriteques);
+            questionCont.setAttribute('class', 'choice-button quesbtn child' + ' ' + parentID);
     }
-    questionCont.setAttribute('class', 'choice-button quesbtn');
     questionCont.textContent = questionText;
     changecolor();
         };
@@ -221,12 +231,6 @@ function changecolor(){
     changecolor();
         };
 
-        
-        
-        
-        
-        
-            
     // surveyDestination.appendChild(surveyCont);
     // surveyDestination.appendChild(statsCont);
     // statsCont.setAttribute('class', 'stats-cont');
@@ -234,8 +238,6 @@ function changecolor(){
     // respondents = respondents.toLocaleString();
     
        
-    
-    
 
 // LOGIC FOR HOME MENU
 
@@ -261,7 +263,7 @@ function nav2QuestionSelection () {
 
 // CREATE ANALYSIS SCREEN
 
-async function updateAnalysis (clickedID) {
+async function updateAnalysis (clickedID) {  
     withinSurvey = true;
     const res = await fetch(newurl + 'surveys/50/overview?' + 'api_id=196110385519&api_key=b34d68f6d23f26a9ff0750cc9787ab87');
     const json = await res.json();
@@ -296,6 +298,10 @@ async function updateAnalysis (clickedID) {
         })
         changecolor();
         sessionStorage.setItem('lastsurvey', clickedID);
+        if(backButtonHeight == true){
+            document.documentElement.scrollTop = 1640;
+        }
+        backButtonHeight = false;
   };
 
 function delayQuestionList(){
@@ -348,7 +354,12 @@ async function updateQuestionAnalysis (clickedQuestionID) {
         back.textContent = 'Back to Survey';
         document.querySelector('.analysis-wrapper').appendChild(back);
         questionListTarget.innerHTML = "";
+        var backbutton = document.createElement('img');
+        backbutton.src = 'images/arrows.png';
+        back.appendChild(backbutton);
         back.addEventListener('click', updateAnalysis);
+        backbutton.setAttribute('id', 'backbutton');
+        backButtonHeight = true;
     }
 
     
@@ -489,7 +500,8 @@ function renderQuestionList(qe){
     questionObject.setAttribute('class', 'questionListCont');
     if(qe.is_parent == true && qe.is_multi == true){
         questionObject.setAttribute('class', 'parentQ');
-    } else {
+    } 
+    else {
         questionObject.setAttribute('id', qe.id);
         totalCont.appendChild(scoreObject);
         scoreObject.setAttribute('class', 'questionListContScores texttochange');
@@ -1102,6 +1114,7 @@ function favouriteques(){
     var x = event.target;
     x.setAttribute('class', 'favourited');
     var a = (x.parentNode);
+    var classtest = a.childNodes[0];
     var clone = a.cloneNode(true);
     var locationtest = (a.parentNode);
     if (locationtest.id == 'surveyTarget'){
@@ -1141,6 +1154,23 @@ function favouriteques(){
     }
     x.removeEventListener('click', favouriteques);
     x.addEventListener('click', softunfavourite);
+    // var foraloopin = document.getElementbyId('questionTarget').querySelectorAll('menuCont');
+
+ /*   if (classtest.classList.contains(parentID)){
+        foraloopin.forEach(quizzy =>{
+            if(classtest.classList == parentID){
+                var replica = quizzy.cloneNode(true);
+                if (favQData.includes(quizzy.id) == false){
+                    favQData.push(quizzy.id);
+                }
+                var PJSONready = JSON.stringify(favQData);
+                localStorage.setItem('favQData', QJSONready);
+                document.querySelector('#favouriteTarget2').appendChild(quizzy);
+                quizzy.setAttribute('class', 'menuCont ques quest');
+                var clonebutton = document.getElementById('favouriteTarget2').querySelectorAll('.quesbtn');
+            }
+        })
+    } */
 };
 
 function unfavourite(){
